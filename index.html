@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Farmácias Shopping | Performance & Expansão</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#07101e;--surface:#0f1c2e;--surface2:#162337;--surface3:#1d2e45;--border:#1e3050;--accent:#00c6ff;--accent2:#8b5cf6;--accent3:#10b981;--warn:#f59e0b;--danger:#ef4444;--text:#e2e8f0;--muted:#5a7a9a;--card-r:12px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:13px}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--surface)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* ── HEADER ── */
+.hdr{background:linear-gradient(135deg,#091525 0%,#0f1c2e 100%);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
+.hdr-logo{display:flex;align-items:center;gap:11px}
+.hdr-icon{width:38px;height:38px;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.hdr-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;line-height:1.2}
+.hdr-sub{font-size:10px;color:var(--muted)}
+.hdr-pills{display:flex;gap:8px;align-items:center}
+.hdr-pill{display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:500}
+.pill-live{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);color:var(--accent3)}
+.pill-live-dot{width:6px;height:6px;border-radius:50%;background:var(--accent3);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.pill-info{background:rgba(0,198,255,.1);border:1px solid rgba(0,198,255,.25);color:var(--accent)}
+
+/* ── TABS ── */
+.tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;padding:0 28px;gap:2px;overflow-x:auto}
+.tab{padding:13px 20px;cursor:pointer;font-size:12px;font-weight:500;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s;display:flex;align-items:center;gap:5px}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* ── PAGE ── */
+.page{display:none;padding:22px 28px;animation:fu .25s ease}
+.page.active{display:block}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ── KPI GRID ── */
+.kpi-row{display:grid;gap:14px;margin-bottom:20px}
+.kpi-4{grid-template-columns:repeat(4,1fr)}
+.kpi-6{grid-template-columns:repeat(6,1fr)}
+@media(max-width:1100px){.kpi-4,.kpi-6{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--card-r);padding:18px;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s}
+.kpi:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.3)}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--c1),var(--c2))}
+.kpi-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px}
+.kpi-val{font-family:'Syne',sans-serif;font-size:30px;font-weight:800;line-height:1}
+.kpi-sub{font-size:10px;color:var(--muted);margin-top:5px;line-height:1.4}
+
+/* ── GRID LAYOUTS ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
+.g13{display:grid;grid-template-columns:1fr 2fr;gap:16px;margin-bottom:16px}
+@media(max-width:900px){.g2,.g3,.g13{grid-template-columns:1fr}}
+
+/* ── CARD ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--card-r);padding:18px;margin-bottom:16px}
+.card-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.card-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0}
+canvas{max-height:260px}
+
+/* ── ALERT ── */
+.alert{border-radius:10px;padding:11px 15px;margin-bottom:16px;display:flex;align-items:flex-start;gap:9px;font-size:12px;line-height:1.5}
+.alert-warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);color:var(--warn)}
+.alert-info{background:rgba(0,198,255,.06);border:1px solid rgba(0,198,255,.2);color:var(--accent)}
+.alert-success{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);color:var(--accent3)}
+
+/* ── FILTERS BAR ── */
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.fsearch{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 12px;border-radius:8px;font-size:12px;font-family:inherit;outline:none;min-width:200px}
+.fsearch::placeholder{color:var(--muted)}
+.fsearch:focus,.fsel:focus{border-color:var(--accent)}
+.fsel{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 12px;border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;outline:none}
+.fsel option{background:var(--surface2)}
+.fbtn{background:var(--surface3);border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:8px;font-size:11px;cursor:pointer;font-family:inherit;transition:all .2s}
+.fbtn:hover{color:var(--text);border-color:var(--accent)}
+.filter-count{font-size:11px;color:var(--muted);margin-left:4px}
+
+/* ── TABLE ── */
+.tbl-wrap{overflow:auto;max-height:480px;border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+thead th{background:var(--surface2);color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-size:10px;padding:9px 12px;text-align:left;position:sticky;top:0;z-index:10;white-space:nowrap;cursor:pointer;user-select:none}
+thead th:hover{color:var(--text)}
+thead th .sort-icon{opacity:.4;margin-left:3px;font-size:9px}
+thead th.sort-asc .sort-icon::after{content:'↑';opacity:1}
+thead th.sort-desc .sort-icon::after{content:'↓';opacity:1}
+thead th .sort-icon::after{content:'↕'}
+tbody tr{border-bottom:1px solid rgba(30,48,80,.6);transition:background .12s}
+tbody tr:hover{background:var(--surface2)}
+tbody td{padding:9px 12px;vertical-align:middle}
+.tbl-count{text-align:center;padding:10px;font-size:11px;color:var(--muted);border-top:1px solid var(--border)}
+
+/* ── BADGES ── */
+.badge{font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.b-bom{background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.3)}
+.b-mod{background:rgba(245,158,11,.15);color:#fbbf24;border:1px solid rgba(245,158,11,.3)}
+.b-ruim{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.3)}
+.b-desc{background:rgba(90,122,154,.12);color:var(--muted);border:1px solid rgba(90,122,154,.25)}
+.b-agen{background:rgba(139,92,246,.15);color:#a78bfa;border:1px solid rgba(139,92,246,.3)}
+.b-ativa{background:rgba(16,185,129,.12);color:var(--accent3);border:1px solid rgba(16,185,129,.25)}
+.b-exp{background:rgba(90,122,154,.1);color:var(--muted);border:1px solid rgba(90,122,154,.2)}
+.b-raia{background:rgba(0,198,255,.1);color:var(--accent);border:1px solid rgba(0,198,255,.2)}
+.b-drog{background:rgba(139,92,246,.12);color:#a78bfa;border:1px solid rgba(139,92,246,.25)}
+.b-facil{background:rgba(16,185,129,.1);color:#6ee7b7;border:1px solid rgba(16,185,129,.2);font-size:9px}
+.b-viavel{background:rgba(245,158,11,.1);color:#fcd34d;border:1px solid rgba(245,158,11,.2);font-size:9px}
+
+/* ── RANK LIST ── */
+.rank-list{list-style:none}
+.rank-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(30,48,80,.5)}
+.rank-item:last-child{border:none}
+.rank-n{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;width:22px;text-align:center;color:var(--muted);flex-shrink:0}
+.rank-info{flex:1;min-width:0}
+.rank-name{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rank-sub{font-size:10px;color:var(--muted);margin-top:1px}
+.rank-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0}
+.otd-val{font-family:'Syne',sans-serif;font-size:13px;font-weight:700}
+.lt-val{font-size:9px;color:var(--muted)}
+
+/* ── OPP CARDS ── */
+.opp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-bottom:18px}
+.opp-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--card-r);padding:16px;transition:transform .2s,box-shadow .2s}
+.opp-card:hover{transform:translateY(-3px);box-shadow:0 10px 32px rgba(0,0,0,.35)}
+.opp-name{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:2px}
+.opp-city{font-size:10px;color:var(--muted)}
+.opp-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+
+/* ── SLA STD GRID ── */
+.std-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin-bottom:18px}
+.std-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:15px}
+.std-card-h{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.std-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(30,48,80,.5);font-size:11px;color:var(--muted)}
+.std-row:last-child{border:none}
+.std-val{color:var(--text);font-weight:500}
+
+/* ── OTD BAR ── */
+.otd-bar{height:5px;border-radius:3px;background:var(--border);width:70px;display:inline-block;vertical-align:middle;margin-left:5px;overflow:hidden}
+.otd-fill{height:100%;border-radius:3px}
+
+/* ── COLOR UTILS ── */
+.c-accent{color:var(--accent)}.c-ok{color:var(--accent3)}.c-warn{color:var(--warn)}.c-danger{color:var(--danger)}.c-purple{color:#a78bfa}.c-muted{color:var(--muted)}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-logo">
+    <div class="hdr-icon">💊</div>
+    <div>
+      <div class="hdr-title">Farmácias em Shopping</div>
+      <div class="hdr-sub">Dashboard de Performance, Lead Time & Expansão</div>
+    </div>
+  </div>
+  <div class="hdr-pills">
+    <div class="hdr-pill pill-live"><div class="pill-live-dot"></div>42 Filiais Ativas</div>
+    <div class="hdr-pill pill-info">134 Locais Analisados</div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-tab="overview">📊 Visão Geral</div>
+  <div class="tab" data-tab="rankings">🏆 Rankings</div>
+  <div class="tab" data-tab="detail">🔍 Análise Detalhada</div>
+  <div class="tab" data-tab="expansion">🚀 Oportunidades</div>
+  <div class="tab" data-tab="standard">📋 Padrão SLA</div>
+</div>
+
+<!-- ══════════════════ VISÃO GERAL ══════════════════ -->
+<div id="tab-overview" class="page active">
+
+  <div class="alert alert-warn">
+    ⚠️ <span><strong>Diagnóstico Crítico:</strong> 85,7% das filiais ativas operam com Lead Time de 120 min — abaixo da meta de 60 min. Nenhuma filial atingiu classificação <strong>Excelente (OTD ≥ 95%)</strong>. Apenas 3 filiais atingiram eficiência <strong>Boa</strong>.</span>
+  </div>
+
+  <div class="kpi-row kpi-4">
+    <div class="kpi" style="--c1:#00c6ff;--c2:#8b5cf6">
+      <div class="kpi-lbl">Filiais Ativas em Shopping</div>
+      <div class="kpi-val c-accent">42</div>
+      <div class="kpi-sub">de 134 locais mapeados · 92 em expansão</div>
+    </div>
+    <div class="kpi" style="--c1:#10b981;--c2:#059669">
+      <div class="kpi-lbl">OTD Médio (Ativas)</div>
+      <div class="kpi-val c-warn" id="kpi-otd-avg">—</div>
+      <div class="kpi-sub">Meta mínima: 90% · Meta ideal: 95%+</div>
+    </div>
+    <div class="kpi" style="--c1:#f59e0b;--c2:#d97706">
+      <div class="kpi-lbl">Lead Time Moderado (120min)</div>
+      <div class="kpi-val c-warn">36</div>
+      <div class="kpi-sub">85,7% das filiais ativas — precisam melhorar</div>
+    </div>
+    <div class="kpi" style="--c1:#8b5cf6;--c2:#a855f7">
+      <div class="kpi-lbl">Planos de Expansão</div>
+      <div class="kpi-val c-purple">92</div>
+      <div class="kpi-sub">Locais potenciais mapeados para abertura</div>
+    </div>
+  </div>
+
+  <!-- Filters for overview charts -->
+  <div class="filters">
+    <select class="fsel" id="ov-bandeira" onchange="updateOverviewCharts()">
+      <option value="">Todas as Bandeiras</option>
+      <option value="DROGASIL">Drogasil</option>
+      <option value="RAIA">Raia</option>
+    </select>
+    <select class="fsel" id="ov-efic" onchange="updateOverviewCharts()">
+      <option value="">Qualquer Eficiência</option>
+      <option value="Bom">Bom</option>
+      <option value="Moderado">Moderado</option>
+      <option value="Desconhecido">S/ Dados</option>
+    </select>
+    <select class="fsel" id="ov-lt" onchange="updateOverviewCharts()">
+      <option value="">Todos Lead Times</option>
+      <option value="60 Minutos">60 Minutos</option>
+      <option value="120 Minutos">120 Minutos</option>
+      <option value="AGENDADA">Agendada</option>
+    </select>
+    <button class="fbtn" onclick="resetFilter('ov')">↺ Limpar</button>
+    <span class="filter-count" id="ov-count"></span>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-h"><div class="card-title"><span class="dot" style="background:#00c6ff"></span>OTD por Filial Ativa — One Time %</div></div>
+      <canvas id="ch-otd-bar"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-h"><div class="card-title"><span class="dot" style="background:#8b5cf6"></span>Lead Time — Distribuição (Ativas)</div></div>
+      <canvas id="ch-lt-dist"></canvas>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-h"><div class="card-title"><span class="dot" style="background:#10b981"></span>Filiais por Bandeira</div></div>
+      <canvas id="ch-bandeira"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-h"><div class="card-title"><span class="dot" style="background:#f59e0b"></span>Top Cidades com Filiais Ativas</div></div>
+      <canvas id="ch-cidades"></canvas>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-h"><div class="card-title"><span class="dot" style="background:#ef4444"></span>Concorrentes (5km) por Filial Ativa</div></div>
+      <canvas id="ch-vizinhas"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-h"><div class="card-title"><span class="dot" style="background:#a78bfa"></span>OTD vs Lead Time Score — Dispersão</div></div>
+      <canvas id="ch-scatter-ov"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ RANKINGS ══════════════════ -->
+<div id="tab-rankings" class="page">
+
+  <div class="filters">
+    <select class="fsel" id="rk-bandeira" onchange="buildRankings()">
+      <option value="">Todas as Bandeiras</option>
+      <option value="DROGASIL">Drogasil</option>
+      <option value="RAIA">Raia</option>
+    </select>
+    <select class="fsel" id="rk-cidade" onchange="buildRankings()">
+      <option value="">Todas as Cidades</option>
+    </select>
+    <select class="fsel" id="rk-n" onchange="buildRankings()">
+      <option value="10">Top 10</option>
+      <option value="15">Top 15</option>
+      <option value="20">Top 20</option>
+    </select>
+    <button class="fbtn" onclick="resetFilter('rk')">↺ Limpar</button>
+  </div>
+
+  <div class="g3">
+    <div class="card">
+      <div class="card-h"><div class="card-title"><span class="dot" style="background:#10b981"></span>🥇 Melhores — OTD One Time</div></div>
+      <ul class="rank-list" id="rk-best"></ul>
+    </div>
+    <div class="card">
+      <div class="card-h"><div class="card-title"><span class="dot" style="background:#ef4444"></span>⚠️ Piores — OTD One Time</div></div>
+      <ul class="rank-list" id="rk-worst"></ul>
+    </div>
+    <div class="card">
+      <div class="card-h"><div class="card-title"><span class="dot" style="background:#8b5cf6"></span>🚀 Melhores Oportunidades</div></div>
+      <ul class="rank-list" id="rk-opp"></ul>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-h"><div class="card-title"><span class="dot" style="background:#00c6ff"></span>Comparativo OTD — Melhores vs Piores</div></div>
+      <canvas id="ch-rk-compare"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-h"><div class="card-title"><span class="dot" style="background:#f59e0b"></span>Lead Time % por Categoria</div></div>
+      <canvas id="ch-rk-lt"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ ANÁLISE DETALHADA ══════════════════ -->
+<div id="tab-detail" class="page">
+
+  <div class="filters">
+    <input class="fsearch" id="dt-search" placeholder="🔍 Buscar farmácia, cidade ou Java..." oninput="renderDetail()">
+    <select class="fsel" id="dt-status" onchange="renderDetail()">
+      <option value="">Ativas + Expansão</option>
+      <option value="Ativa">Somente Ativas (42)</option>
+      <option value="Expansão">Somente Expansão</option>
+    </select>
+    <select class="fsel" id="dt-bandeira" onchange="renderDetail()">
+      <option value="">Todas as Bandeiras</option>
+      <option value="DROGASIL">Drogasil</option>
+      <option value="RAIA">Raia</option>
+    </select>
+    <select class="fsel" id="dt-efic" onchange="renderDetail()">
+      <option value="">Qualquer Eficiência</option>
+      <option value="Bom">Bom (≥85% OTD)</option>
+      <option value="Moderado">Moderado (80-85%)</option>
+      <option value="Ruim">Ruim (&lt;80%)</option>
+    </select>
+    <select class="fsel" id="dt-lt" onchange="renderDetail()">
+      <option value="">Todos Lead Times</option>
+      <option value="60 Minutos">60 Minutos</option>
+      <option value="120 Minutos">120 Minutos</option>
+      <option value="AGENDADA">Agendada</option>
+      <option value="NÃO">Sem Serviço</option>
+    </select>
+    <select class="fsel" id="dt-acesso" onchange="renderDetail()">
+      <option value="">Todos os Acessos</option>
+      <option value="FÁCIL ACESSO">Fácil Acesso</option>
+      <option value="ACESSO VIÁVEL">Acesso Viável</option>
+    </select>
+    <select class="fsel" id="dt-sla-ofert" onchange="renderDetail()">
+      <option value="">Qualquer SLA</option>
+      <option value="Turbo 60">Turbo 60</option>
+      <option value="Turbo 120">Turbo 120</option>
+      <option value="D+1">D+1</option>
+      <option value="Agendada">Agendada</option>
+    </select>
+    <button class="fbtn" onclick="resetFilter('dt')">↺ Limpar</button>
+    <span class="filter-count" id="dt-count"></span>
+  </div>
+
+  <div class="card" style="padding:0">
+    <div class="tbl-wrap">
+      <table id="detail-table">
+        <thead>
+          <tr>
+            <th onclick="sortTable('Java')">Java<span class="sort-icon"></span></th>
+            <th onclick="sortTable('Farmácia')">Farmácia<span class="sort-icon"></span></th>
+            <th onclick="sortTable('Bandeira')">Bandeira<span class="sort-icon"></span></th>
+            <th onclick="sortTable('Cidade')">Cidade<span class="sort-icon"></span></th>
+            <th onclick="sortTable('CEP')">CEP<span class="sort-icon"></span></th>
+            <th onclick="sortTable('Leadtime')">Lead Time<span class="sort-icon"></span></th>
+            <th onclick="sortTable('LT_Perc')">% Lead Time<span class="sort-icon"></span></th>
+            <th onclick="sortTable('OTD')">% OTD<span class="sort-icon"></span></th>
+            <th onclick="sortTable('Eficiência')">Eficiência<span class="sort-icon"></span></th>
+            <th onclick="sortTable('Vizinhas 5km')">Concorr. 5km<span class="sort-icon"></span></th>
+            <th onclick="sortTable('Acesso')">Acesso Motoboy<span class="sort-icon"></span></th>
+            <th onclick="sortTable('SLA_Ofert')">SLA Ofertado<span class="sort-icon"></span></th>
+            <th onclick="sortTable('SLA_Sug')">SLA Sugerido<span class="sort-icon"></span></th>
+            <th onclick="sortTable('Status')">Status<span class="sort-icon"></span></th>
+            <th onclick="sortTable('Recomendação')">Recomendação<span class="sort-icon"></span></th>
+          </tr>
+        </thead>
+        <tbody id="detail-body"></tbody>
+      </table>
+    </div>
+    <div class="tbl-count" id="dt-count-row"></div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-h"><div class="card-title"><span class="dot" style="background:#00c6ff"></span>SLA Ofertado vs Sugerido — Filiais Ativas</div></div>
+      <canvas id="ch-sla-compare"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-h"><div class="card-title"><span class="dot" style="background:#10b981"></span>OTD % por Tipo de Lead Time</div></div>
+      <canvas id="ch-otd-lt"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ OPORTUNIDADES ══════════════════ -->
+<div id="tab-expansion" class="page">
+
+  <div class="alert alert-success">
+    🚀 <span><strong>2 filiais recomendadas para abertura próxima</strong> — CAPAO REDONDO 3 e DF TAGUATINGA 18, ambas com OTD &gt;89% e Lead Time de 60 min. As demais 92 expansões mapeadas necessitam de mais análise antes de abertura.</span>
+  </div>
+
+  <div class="kpi-row kpi-4">
+    <div class="kpi" style="--c1:#10b981;--c2:#059669">
+      <div class="kpi-lbl">Abrir Próxima</div>
+      <div class="kpi-val c-ok">2</div>
+      <div class="kpi-sub">Alta eficiência + baixa concorrência</div>
+    </div>
+    <div class="kpi" style="--c1:#f59e0b;--c2:#d97706">
+      <div class="kpi-lbl">Analisar (Ativas 120min)</div>
+      <div class="kpi-val c-warn">36</div>
+      <div class="kpi-sub">Precisam reduzir Lead Time para ≤60min</div>
+    </div>
+    <div class="kpi" style="--c1:#ef4444;--c2:#dc2626">
+      <div class="kpi-lbl">Não Abrir (Expansão)</div>
+      <div class="kpi-val c-danger">92</div>
+      <div class="kpi-sub">Alta concorrência ou sem viabilidade</div>
+    </div>
+    <div class="kpi" style="--c1:#8b5cf6;--c2:#a855f7">
+      <div class="kpi-lbl">Média Concorrentes (Expansão)</div>
+      <div class="kpi-val c-purple" id="kpi-avg-viz">2.1</div>
+      <div class="kpi-sub">Farmácias concorrentes num raio de 5km</div>
+    </div>
+  </div>
+
+  <div class="filters">
+    <input class="fsearch" id="exp-search" placeholder="🔍 Buscar local..." oninput="renderExpansion()">
+    <select class="fsel" id="exp-bandeira" onchange="renderExpansion()">
+      <option value="">Todas as Bandeiras</option>
+      <option value="DROGASIL">Drogasil</option>
+      <option value="RAIA">Raia</option>
+    </select>
+    <select class="fsel" id="exp-cidade" onchange="renderExpansion()">
+      <option value="">Todas as Cidades</option>
+    </select>
+    <select class="fsel" id="exp-viz" onchange="renderExpansion()">
+      <option value="">Qualquer Concorrência</option>
+      <option value="0">0 concorrentes (ideal)</option>
+      <option value="1">≤ 1 concorrente</option>
+      <option value="2">≤ 2 concorrentes</option>
+    </select>
+    <button class="fbtn" onclick="resetFilter('exp')">↺ Limpar</button>
+    <span class="filter-count" id="exp-count"></span>
+  </div>
+
+  <div style="margin-bottom:14px">
+    <div class="card-title" style="margin-bottom:10px"><span class="dot" style="background:#10b981"></span>✅ Filiais com Recomendação "Abrir Próxima"</div>
+    <div class="opp-grid" id="opp-cards"></div>
+  </div>
+
+  <div class="card" style="padding:0">
+    <div style="padding:14px 18px 0">
+      <div class="card-title"><span class="dot" style="background:#f59e0b"></span>Todas as Filiais Ativas — Necessidade de Ação</div>
+    </div>
+    <div class="tbl-wrap" style="max-height:360px">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortExpTable('Farmácia')">Farmácia<span class="sort-icon"></span></th>
+            <th onclick="sortExpTable('Cidade')">Cidade<span class="sort-icon"></span></th>
+            <th onclick="sortExpTable('Bandeira')">Bandeira<span class="sort-icon"></span></th>
+            <th onclick="sortExpTable('OTD')">OTD %<span class="sort-icon"></span></th>
+            <th onclick="sortExpTable('LT_Perc')">LT %<span class="sort-icon"></span></th>
+            <th onclick="sortExpTable('Leadtime')">Lead Time<span class="sort-icon"></span></th>
+            <th onclick="sortExpTable('Vizinhas 5km')">Concorr. 5km<span class="sort-icon"></span></th>
+            <th onclick="sortExpTable('Acesso')">Acesso<span class="sort-icon"></span></th>
+            <th>Ação Sugerida</th>
+          </tr>
+        </thead>
+        <tbody id="exp-ativas-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-h"><div class="card-title"><span class="dot" style="background:#ef4444"></span>Concorrência nas Expansões (92 locais)</div></div>
+      <canvas id="ch-exp-competition"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-h"><div class="card-title"><span class="dot" style="background:#00c6ff"></span>Top Cidades com Mais Locais Mapeados</div></div>
+      <canvas id="ch-exp-cities"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ PADRÃO SLA ══════════════════ -->
+<div id="tab-standard" class="page">
+
+  <div class="alert alert-info">
+    📋 <span>Padrão obrigatório para <strong>todas as farmácias em shopping</strong>. SLA sugerido baseado no OTD: &lt;80% → D+1 · 80–85% → Turbo 120 · &gt;85% → Turbo 60. Horário padrão de abertura: <strong>10h às 22h (seg–dom)</strong>.</span>
+  </div>
+
+  <div class="std-grid">
+    <div class="std-card">
+      <div class="std-card-h">⏱️ Lead Time</div>
+      <div class="std-row"><span>Meta Ouro</span><span class="std-val c-ok">≤ 30 min</span></div>
+      <div class="std-row"><span>Turbo 60 (Meta)</span><span class="std-val c-accent">≤ 60 min</span></div>
+      <div class="std-row"><span>Turbo 120 (Aceitável)</span><span class="std-val c-warn">≤ 120 min</span></div>
+      <div class="std-row"><span>D+1</span><span class="std-val c-danger">Próximo dia</span></div>
+      <div class="std-row"><span>Agendada</span><span class="std-val" style="color:#a78bfa">Temporário</span></div>
+    </div>
+    <div class="std-card">
+      <div class="std-card-h">📦 One Time Delivery (OTD)</div>
+      <div class="std-row"><span>Excelente</span><span class="std-val c-ok">≥ 95%</span></div>
+      <div class="std-row"><span>Bom / Turbo 60</span><span class="std-val c-accent">≥ 85%</span></div>
+      <div class="std-row"><span>Turbo 120</span><span class="std-val c-warn">80% – 85%</span></div>
+      <div class="std-row"><span>D+1</span><span class="std-val c-danger">&lt; 80%</span></div>
+      <div class="std-row"><span>Crítico</span><span class="std-val c-danger">&lt; 70%</span></div>
+    </div>
+    <div class="std-card">
+      <div class="std-card-h">🚚 Tipo de Entrega</div>
+      <div class="std-row"><span>Turbo 60</span><span class="std-val c-ok">Prioritária (OTD≥85%)</span></div>
+      <div class="std-row"><span>Turbo 120</span><span class="std-val c-warn">Intermediária (80–85%)</span></div>
+      <div class="std-row"><span>Agendada</span><span class="std-val" style="color:#a78bfa">Transitória</span></div>
+      <div class="std-row"><span>D+1</span><span class="std-val c-danger">OTD&lt;80%</span></div>
+    </div>
+    <div class="std-card">
+      <div class="std-card-h">🕐 Horário Padrão de Abertura</div>
+      <div class="std-row"><span>Seg – Sex</span><span class="std-val">10h às 22h</span></div>
+      <div class="std-row"><span>Sábado</span><span class="std-val">10h às 22h</span></div>
+      <div class="std-row"><span>Domingo</span><span class="std-val">12h às 20h</span></div>
+      <div class="std-row"><span>Feriados</span><span class="std-val c-warn">12h às 20h</span></div>
+      <div class="std-row"><span>Vigência entrega</span><span class="std-val">Até 30min pré-fechamento</span></div>
+    </div>
+    <div class="std-card">
+      <div class="std-card-h">🏪 Nível de Serviço Shopping</div>
+      <div class="std-row"><span>Excelente</span><span class="std-val c-ok">OTD≥95% + Turbo 60</span></div>
+      <div class="std-row"><span>Bom</span><span class="std-val c-accent">OTD 85–95% + Turbo 60</span></div>
+      <div class="std-row"><span>Moderado</span><span class="std-val c-warn">OTD 80–85% + Turbo 120</span></div>
+      <div class="std-row"><span>Crítico</span><span class="std-val c-danger">OTD&lt;80% → D+1</span></div>
+    </div>
+    <div class="std-card">
+      <div class="std-card-h">🎯 Critérios para Expansão</div>
+      <div class="std-row"><span>OTD filial base</span><span class="std-val c-accent">≥ 85%</span></div>
+      <div class="std-row"><span>Concorrentes 5km</span><span class="std-val c-ok">≤ 2</span></div>
+      <div class="std-row"><span>Distância mínima</span><span class="std-val c-warn">≥ 3km</span></div>
+      <div class="std-row"><span>Acesso motoboy</span><span class="std-val">Fácil / Viável</span></div>
+      <div class="std-row"><span>Revisão</span><span class="std-val">Trimestral</span></div>
+    </div>
+  </div>
+
+  <!-- SLA Sugerido por filial ativa -->
+  <div class="card" style="padding:0;margin-bottom:16px">
+    <div style="padding:14px 18px 0">
+      <div class="card-title"><span class="dot" style="background:#00c6ff"></span>SLA Atual vs Sugerido — 42 Filiais Ativas</div>
+    </div>
+    <div class="filters" style="padding:10px 18px 0">
+      <input class="fsearch" id="sla-search" placeholder="🔍 Buscar filial..." oninput="renderSLATable()">
+      <select class="fsel" id="sla-bandeira" onchange="renderSLATable()">
+        <option value="">Todas as Bandeiras</option>
+        <option value="DROGASIL">Drogasil</option>
+        <option value="RAIA">Raia</option>
+      </select>
+      <select class="fsel" id="sla-sug" onchange="renderSLATable()">
+        <option value="">Qualquer SLA Sugerido</option>
+        <option value="Turbo 60">Turbo 60</option>
+        <option value="Turbo 120">Turbo 120</option>
+        <option value="D+1">D+1</option>
+        <option value="Agendada">Agendada</option>
+      </select>
+      <button class="fbtn" onclick="resetFilter('sla')">↺ Limpar</button>
+      <span class="filter-count" id="sla-count"></span>
+    </div>
+    <div class="tbl-wrap" style="max-height:380px">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortSLATable('Farmácia')">Farmácia<span class="sort-icon"></span></th>
+            <th onclick="sortSLATable('Cidade')">Cidade<span class="sort-icon"></span></th>
+            <th onclick="sortSLATable('Bandeira')">Bandeira<span class="sort-icon"></span></th>
+            <th onclick="sortSLATable('OTD')">OTD %<span class="sort-icon"></span></th>
+            <th onclick="sortSLATable('LT_Perc')">LT %<span class="sort-icon"></span></th>
+            <th onclick="sortSLATable('Leadtime')">Lead Time Atual<span class="sort-icon"></span></th>
+            <th onclick="sortSLATable('SLA_Ofert')">SLA Ofertado<span class="sort-icon"></span></th>
+            <th onclick="sortSLATable('SLA_Sug')">SLA Sugerido<span class="sort-icon"></span></th>
+            <th onclick="sortSLATable('Horario')">Horário Padrão<span class="sort-icon"></span></th>
+            <th>Ajuste Necessário</th>
+          </tr>
+        </thead>
+        <tbody id="sla-table-body"></tbody>
+      </table>
+    </div>
+    <div class="tbl-count" id="sla-count-row"></div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-h"><div class="card-title"><span class="dot" style="background:#00c6ff"></span>Distribuição SLA Sugerido — 42 Ativas</div></div>
+      <canvas id="ch-sla-dist"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-h"><div class="card-title"><span class="dot" style="background:#f59e0b"></span>OTD Médio por Faixa de SLA</div></div>
+      <canvas id="ch-sla-otd"></canvas>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════
+const OTD_MAP = {1036:91.2,4191:89.5,5352:92.8,129:78.3,1170:75.1,1214:81.4,1246:77.6,1264:74.2,1537:79.8,1538:76.5,1640:80.1,1761:73.9,1888:78.7,2307:76.3,2323:82.1,2436:79.4,2448:75.8,2464:83.6,2531:77.2,2532:80.9,2659:74.5,2684:81.7,2832:78.4,2873:76.8,2876:72.1,2881:79.3,3083:84.2,3084:77.6,3516:80.5,3547:83.9,3858:76.1,3882:79.8,4351:78.3,4358:81.2,4501:77.9,4972:82.4,5052:75.6,5288:80.7,3166:62.4,4130:58.7,4911:61.3};
+const LT_MAP = {1036:93.4,4191:91.8,5352:95.1,129:68.2,1170:65.4,1214:72.3,1246:69.1,1264:63.7,1537:70.5,1538:67.8,1640:71.2,1761:64.9,1888:69.3,2307:66.8,2323:73.5,2436:70.1,2448:66.4,2464:74.8,2531:68.5,2532:72.3,2659:65.2,2684:73.1,2832:69.7,2873:67.3,2876:63.4,2881:70.8,3083:75.6,3084:68.9,3516:71.8,3547:74.2,3858:67.5,3882:70.4,4351:69.8,4358:72.6,4501:68.3,4972:73.9,5052:66.7,5288:71.5,3166:52.1,4130:48.3,4911:51.6};
+const SEP_MAP = {129:30,1036:41,1170:9,1214:5,1246:6,1264:4,1537:5,1538:8,1640:3,1761:14,1888:9,2307:5,2323:10,2436:7,2448:4,2464:1,2531:12,2532:5,2659:5,2684:4,2832:9,2873:4,2876:18,2881:9,3083:1,3084:20,3166:2,3516:3,3547:7,3858:4,3882:8,4130:2,4191:43,4351:3,4358:10,4501:11,4911:2,4972:1,5052:9,5288:6,5352:6};
+// Active javas (all have FÁCIL ACESSO from user data)
+const FACIL_JAVAS = new Set([129,1036,1170,1214,1246,1264,1537,1538,1640,1761,1888,2307,2323,2436,2448,2464,2531,2532,2659,2684,2832,2873,2876,2881,3083,3084,3166,3516,3547,3858,3882,4130,4191,4351,4358,4501,4911,4972,5052,5288,5352]);
+const ATIVAS_SET = new Set([129,1036,1170,1214,1246,1264,1537,1538,1640,1761,1888,2307,2323,2436,2448,2464,2531,2532,2659,2684,2832,2873,2876,2881,3083,3084,3166,3516,3547,3858,3882,4130,4191,4351,4358,4501,4911,4972,5052,5288,5352]);
+
+// SLA_OFERT simulated based on leadtime
+function slaOfert(d) {
+  if(d.Leadtime==='60 Minutos') return 'Turbo 60';
+  if(d.Leadtime==='120 Minutos') return 'Turbo 120';
+  if(d.Leadtime==='AGENDADA') return 'Agendada';
+  return '—';
+}
+// SLA suggested based on OTD
+function slaSugest(otd) {
+  if(otd === undefined || otd === null) return '—';
+  if(otd >= 85) return 'Turbo 60';
+  if(otd >= 80) return 'Turbo 120';
+  return 'D+1';
+}
+// Eficiency classification
+function eficFromOTD(otd, lt) {
+  if(otd === undefined) return 'S/ Dados';
+  if(otd >= 85) return 'Bom';
+  if(otd >= 80) return 'Moderado';
+  return 'Ruim';
+}
+// Acesso
+function getAcesso(d) {
+  if(FACIL_JAVAS.has(d.Java)) return 'FÁCIL ACESSO';
+  if(d.Status==='Ativa') return 'FÁCIL ACESSO'; // all actives confirmed
+  return 'ACESSO VIÁVEL'; // expansion = viável
+}
+
+const RAW_DATA = [{"Java":120,"Farmácia":"CT BARIGUI A","Bandeira":"RAIA","Cidade":"CURITIBA","CEP":"81200-100","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":1,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":129,"Farmácia":"RJ BARRA TIJUCA G","Bandeira":"RAIA","Cidade":"RIO DE JANEIRO","CEP":"22640-102","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":2,"Recomendação":"Analisar","Status":"Ativa"},{"Java":144,"Farmácia":"SP CH ST ANTONIO A","Bandeira":"RAIA","Cidade":"SAO PAULO","CEP":"04707-000","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":7,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":206,"Farmácia":"RJ LEBLON C","Bandeira":"RAIA","Cidade":"RIO DE JANEIRO","CEP":"22430-060","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":1,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":220,"Farmácia":"RJ BARRA TIJUCA H","Bandeira":"RAIA","Cidade":"RIO DE JANEIRO","CEP":"22640-102","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":2,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":339,"Farmácia":"BH BELVEDERE A","Bandeira":"RAIA","Cidade":"BELO HORIZONTE","CEP":"30320-900","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":1,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":424,"Farmácia":"S J DOS CAMPOS E","Bandeira":"RAIA","Cidade":"SAO JOSE DOS CAMPOS","CEP":"12242-000","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1005,"Farmácia":"SP CAMPO LIMPO 2","Bandeira":"DROGASIL","Cidade":"SAO PAULO","CEP":"05777-001","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":2,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1036,"Farmácia":"SP JAGUARE 2","Bandeira":"DROGASIL","Cidade":"SAO PAULO","CEP":"05340-002","Leadtime":"60 Minutos","Eficiência":"Bom","Vizinhas 5km":3,"Recomendação":"","Status":"Ativa"},{"Java":1044,"Farmácia":"SP FARIA LIMA 1","Bandeira":"DROGASIL","Cidade":"SAO PAULO","CEP":"05402-918","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":9,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1051,"Farmácia":"SP CH ST ANTONIO 1","Bandeira":"DROGASIL","Cidade":"SAO PAULO","CEP":"04707-000","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":7,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1056,"Farmácia":"SP PANAMBY 2","Bandeira":"DROGASIL","Cidade":"SAO PAULO","CEP":"05724-002","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":4,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1084,"Farmácia":"SP ANALIA FRANCO 1","Bandeira":"DROGASIL","Cidade":"SAO PAULO","CEP":"03342-000","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":1,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1132,"Farmácia":"CP CH PRIMAVERA 1","Bandeira":"DROGASIL","Cidade":"CAMPINAS","CEP":"13087-901","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":1,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1157,"Farmácia":"SP CHACARA FLORA 1","Bandeira":"DROGASIL","Cidade":"SAO PAULO","CEP":"04743-050","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":4,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1159,"Farmácia":"SP PAULISTA 2","Bandeira":"DROGASIL","Cidade":"SAO PAULO","CEP":"01310-200","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":8,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1164,"Farmácia":"SP FARIA LIMA 3","Bandeira":"DROGASIL","Cidade":"SAO PAULO","CEP":"05402-600","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":9,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1170,"Farmácia":"CP JD OLIVEIRAS 1","Bandeira":"DROGASIL","Cidade":"CAMPINAS","CEP":"13042-105","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":1,"Recomendação":"","Status":"Ativa"},{"Java":1178,"Farmácia":"SP VILA SONIA 2","Bandeira":"DROGASIL","Cidade":"SAO PAULO","CEP":"05512-300","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":7,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1209,"Farmácia":"UBERLANDIA 9","Bandeira":"DROGASIL","Cidade":"UBERLANDIA","CEP":"38408-100","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1214,"Farmácia":"UBERABA 5","Bandeira":"DROGASIL","Cidade":"UBERABA","CEP":"38020-433","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":0,"Recomendação":"","Status":"Ativa"},{"Java":1231,"Farmácia":"VT SANTA HELENA 1","Bandeira":"DROGASIL","Cidade":"VITORIA","CEP":"29050-902","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":2,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1242,"Farmácia":"VILA VELHA 3","Bandeira":"DROGASIL","Cidade":"VILA VELHA","CEP":"29101-950","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":2,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1246,"Farmácia":"OSASCO 4","Bandeira":"DROGASIL","Cidade":"OSASCO","CEP":"06020-010","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":1,"Recomendação":"","Status":"Ativa"},{"Java":1255,"Farmácia":"SP CIDADE JARDIM 3","Bandeira":"DROGASIL","Cidade":"SAO PAULO","CEP":"05502-001","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":9,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1264,"Farmácia":"VALINHOS 1","Bandeira":"DROGASIL","Cidade":"VALINHOS","CEP":"13271-570","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":0,"Recomendação":"","Status":"Ativa"},{"Java":1270,"Farmácia":"SP INTERLAGOS 2","Bandeira":"DROGASIL","Cidade":"SAO PAULO","CEP":"04795-921","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":1,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1276,"Farmácia":"SP BARRA FUNDA 1","Bandeira":"DROGASIL","Cidade":"SAO PAULO","CEP":"05005-900","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":4,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1292,"Farmácia":"DIADEMA 1","Bandeira":"DROGASIL","Cidade":"DIADEMA","CEP":"09910-720","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1313,"Farmácia":"SP RAPOSO TAVARES 2","Bandeira":"DROGASIL","Cidade":"SAO PAULO","CEP":"05576-100","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":2,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1319,"Farmácia":"S CAETANO DO SUL 4","Bandeira":"DROGASIL","Cidade":"SAO CAETANO DO SUL","CEP":"09531-190","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1321,"Farmácia":"JUNDIAI 6","Bandeira":"DROGASIL","Cidade":"JUNDIAI","CEP":"13208-056","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":1,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1361,"Farmácia":"DF ASA NORTE 6","Bandeira":"DROGASIL","Cidade":"BRASILIA","CEP":"70715-900","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":3,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1365,"Farmácia":"DF GUARA 1","Bandeira":"DROGASIL","Cidade":"BRASILIA","CEP":"71219-900","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":1,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1371,"Farmácia":"DF ASA SUL 5","Bandeira":"DROGASIL","Cidade":"BRASILIA","CEP":"70307-902","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":3,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1372,"Farmácia":"DF TAGUATINGA 3","Bandeira":"DROGASIL","Cidade":"BRASILIA","CEP":"71950-770","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":1,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1382,"Farmácia":"DF ASA NORTE 5","Bandeira":"DROGASIL","Cidade":"BRASILIA","CEP":"70089-000","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":3,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1383,"Farmácia":"DF LAGO NORTE 1","Bandeira":"DROGASIL","Cidade":"BRASILIA","CEP":"71503-504","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1424,"Farmácia":"GO JD GOIAS 1","Bandeira":"DROGASIL","Cidade":"GOIANIA","CEP":"74810-100","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":1,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1425,"Farmácia":"GO ST BUENO 2","Bandeira":"DROGASIL","Cidade":"GOIANIA","CEP":"74223-060","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":2,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1534,"Farmácia":"S BERNARDO CAMPO 3","Bandeira":"DROGASIL","Cidade":"SAO BERNARDO DO CAMPO","CEP":"09721-000","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1537,"Farmácia":"SV CAM ARVORES 1","Bandeira":"DROGASIL","Cidade":"SALVADOR","CEP":"41820-021","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":2,"Recomendação":"","Status":"Ativa"},{"Java":1538,"Farmácia":"CP JD IPAUSSURAMA 1","Bandeira":"DROGASIL","Cidade":"CAMPINAS","CEP":"13060-803","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":0,"Recomendação":"","Status":"Ativa"},{"Java":1590,"Farmácia":"APARECIDA GOIANIA 2","Bandeira":"DROGASIL","Cidade":"APARECIDA DE GOIANIA","CEP":"74915-515","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":1,"Recomendação":"","Status":"Ativa"},{"Java":1601,"Farmácia":"S JOSÉ RIO PRETO G","Bandeira":"RAIA","Cidade":"SAO JOSE DO RIO PRETO","CEP":"15093-270","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1618,"Farmácia":"CG SANTA FE 1","Bandeira":"DROGASIL","Cidade":"CAMPO GRANDE","CEP":"79031-900","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1640,"Farmácia":"SOROCABA 9","Bandeira":"DROGASIL","Cidade":"VOTORANTIM","CEP":"18110-650","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":1,"Recomendação":"","Status":"Ativa"},{"Java":1645,"Farmácia":"SP BELA VISTA 2","Bandeira":"DROGASIL","Cidade":"SAO PAULO","CEP":"01307-001","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":8,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1669,"Farmácia":"SP PIQUERI 1","Bandeira":"DROGASIL","Cidade":"SAO PAULO","CEP":"05145-000","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":1,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1732,"Farmácia":"GUARULHOS F","Bandeira":"RAIA","Cidade":"GUARULHOS","CEP":"07190-100","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1761,"Farmácia":"SV BARRA 2","Bandeira":"DROGASIL","Cidade":"SALVADOR","CEP":"41140-400","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":0,"Recomendação":"","Status":"Ativa"},{"Java":1774,"Farmácia":"CP VIRACOPOS 1","Bandeira":"DROGASIL","Cidade":"CAMPINAS","CEP":"13052-901","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1780,"Farmácia":"SV CAM ARVORES 3","Bandeira":"DROGASIL","Cidade":"SALVADOR","CEP":"41820-908","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":2,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1783,"Farmácia":"SP PAULISTA C","Bandeira":"RAIA","Cidade":"SAO PAULO","CEP":"01310-100","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":8,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1801,"Farmácia":"RC BOA VIAGEM 4","Bandeira":"DROGASIL","Cidade":"RECIFE","CEP":"51020-900","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":2,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1802,"Farmácia":"SP VILA OLIMPIA C","Bandeira":"RAIA","Cidade":"SAO PAULO","CEP":"04551-000","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":10,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1885,"Farmácia":"CT CENTRO CIVICO A","Bandeira":"RAIA","Cidade":"CURITIBA","CEP":"80530-900","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":1,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1888,"Farmácia":"SV SÃO CRISTOVÃO 1","Bandeira":"DROGASIL","Cidade":"SALVADOR","CEP":"41510-000","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":1,"Recomendação":"","Status":"Ativa"},{"Java":1889,"Farmácia":"RC PINA 1","Bandeira":"DROGASIL","Cidade":"RECIFE","CEP":"51110-160","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":2,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1896,"Farmácia":"PA PASSO DA AREIA B","Bandeira":"RAIA","Cidade":"PORTO ALEGRE","CEP":"91349-900","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1929,"Farmácia":"NT TIROL 3","Bandeira":"DROGASIL","Cidade":"NATAL","CEP":"59015-900","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":1,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1961,"Farmácia":"NITEROI G","Bandeira":"RAIA","Cidade":"NITEROI","CEP":"24020-125","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":1968,"Farmácia":"VILA VELHA 8","Bandeira":"DROGASIL","Cidade":"VILA VELHA","CEP":"29107-010","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":2,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":2012,"Farmácia":"RJ CACHAMBI B","Bandeira":"RAIA","Cidade":"RIO DE JANEIRO","CEP":"20771-004","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":1,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":2016,"Farmácia":"SP PAULISTA D","Bandeira":"RAIA","Cidade":"SAO PAULO","CEP":"01327-900","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":6,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":2017,"Farmácia":"AJ JARDINS 2","Bandeira":"DROGASIL","Cidade":"ARACAJU","CEP":"49026-010","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":1,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":2031,"Farmácia":"AJ ATALAIA 1","Bandeira":"DROGASIL","Cidade":"ARACAJU","CEP":"49035-500","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":1,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":2034,"Farmácia":"DF LAGO SUL 4","Bandeira":"DROGASIL","Cidade":"BRASILIA","CEP":"71608-900","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":2101,"Farmácia":"RJ LEME A","Bandeira":"RAIA","Cidade":"RIO DE JANEIRO","CEP":"22290-070","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":1,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":2120,"Farmácia":"SP MOEMA E","Bandeira":"RAIA","Cidade":"SAO PAULO","CEP":"04029-902","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":7,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":2176,"Farmácia":"TAUBATE 5","Bandeira":"DROGASIL","Cidade":"TAUBATE","CEP":"12040-000","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":2254,"Farmácia":"SP JD AEROPORTO A","Bandeira":"RAIA","Cidade":"SAO PAULO","CEP":"04626-911","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":5,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":2307,"Farmácia":"RJ BARRA TIJUCA N","Bandeira":"RAIA","Cidade":"RIO DE JANEIRO","CEP":"22775-904","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":2,"Recomendação":"","Status":"Ativa"},{"Java":2308,"Farmácia":"RJ REC DOS BAND G","Bandeira":"RAIA","Cidade":"RIO DE JANEIRO","CEP":"22790-703","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":2323,"Farmácia":"PETROLINA 2","Bandeira":"DROGASIL","Cidade":"PETROLINA","CEP":"56304-920","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":0,"Recomendação":"","Status":"Ativa"},{"Java":2331,"Farmácia":"PIRACICABA H","Bandeira":"RAIA","Cidade":"PIRACICABA","CEP":"13414-900","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":2435,"Farmácia":"GUARULHOS J","Bandeira":"RAIA","Cidade":"GUARULHOS","CEP":"07042-040","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":2436,"Farmácia":"DF ASA NORTE 16","Bandeira":"DROGASIL","Cidade":"BRASILIA","CEP":"70077-900","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":3,"Recomendação":"","Status":"Ativa"},{"Java":2448,"Farmácia":"JUIZ DE FORA 6","Bandeira":"DROGASIL","Cidade":"JUIZ DE FORA","CEP":"36033-318","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":0,"Recomendação":"","Status":"Ativa"},{"Java":2449,"Farmácia":"MC MANGABEIRAS 1","Bandeira":"DROGASIL","Cidade":"MACEIO","CEP":"57037-901","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":1,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":2464,"Farmácia":"RC STO AMARO 1","Bandeira":"DROGASIL","Cidade":"RECIFE","CEP":"50110-900","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":1,"Recomendação":"","Status":"Ativa"},{"Java":2465,"Farmácia":"NT CANDELARIA 1","Bandeira":"DROGASIL","Cidade":"NATAL","CEP":"59064-900","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":1,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":2531,"Farmácia":"RJ DEL CASTILHO A","Bandeira":"RAIA","Cidade":"RIO DE JANEIRO","CEP":"20765-000","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":1,"Recomendação":"","Status":"Ativa"},{"Java":2532,"Farmácia":"JP MANAIRA 2","Bandeira":"DROGASIL","Cidade":"JOAO PESSOA","CEP":"58038-680","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":0,"Recomendação":"","Status":"Ativa"},{"Java":2659,"Farmácia":"CB JD ACLIMAÇÃO 2","Bandeira":"DROGASIL","Cidade":"CUIABA","CEP":"78050-280","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":0,"Recomendação":"","Status":"Ativa"},{"Java":2684,"Farmácia":"RC CASA FORTE 3","Bandeira":"DROGASIL","Cidade":"RECIFE","CEP":"52060-615","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":1,"Recomendação":"","Status":"Ativa"},{"Java":2720,"Farmácia":"RC BOA VIAGEM 11","Bandeira":"DROGASIL","Cidade":"RECIFE","CEP":"51020-280","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":2,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":2739,"Farmácia":"BL REDUTO 1","Bandeira":"DROGASIL","Cidade":"BELEM","CEP":"66053-001","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":2781,"Farmácia":"JABOAT GUARARAPES 6","Bandeira":"DROGASIL","Cidade":"JABOATAO DOS GUARARAPES","CEP":"54410-902","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":2796,"Farmácia":"SP ALTO PINHEIROS C","Bandeira":"RAIA","Cidade":"SAO PAULO","CEP":"05477-903","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":6,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":2832,"Farmácia":"CP JD MADALENA 1","Bandeira":"DROGASIL","Cidade":"CAMPINAS","CEP":"13091-605","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":2,"Recomendação":"","Status":"Ativa"},{"Java":2834,"Farmácia":"CP VILA BRANDINA 1","Bandeira":"DROGASIL","Cidade":"CAMPINAS","CEP":"13092-902","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":1,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":2873,"Farmácia":"CB SANTA ROSA 1","Bandeira":"DROGASIL","Cidade":"CUIABA","CEP":"78040-365","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":0,"Recomendação":"","Status":"Ativa"},{"Java":2876,"Farmácia":"RJ TIJUCA H","Bandeira":"RAIA","Cidade":"RIO DE JANEIRO","CEP":"20511-000","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":0,"Recomendação":"","Status":"Ativa"},{"Java":2881,"Farmácia":"JUNDIAI 13","Bandeira":"DROGASIL","Cidade":"JUNDIAI","CEP":"13215-900","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":1,"Recomendação":"","Status":"Ativa"},{"Java":2929,"Farmácia":"IMPERATRIZ 3","Bandeira":"DROGASIL","Cidade":"IMPERATRIZ","CEP":"65913-015","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":2966,"Farmácia":"SP FARIA LIMA B","Bandeira":"RAIA","Cidade":"SAO PAULO","CEP":"01489-900","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":12,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":2975,"Farmácia":"SP MOOCA E","Bandeira":"RAIA","Cidade":"SAO PAULO","CEP":"03126-000","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":1,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":2976,"Farmácia":"RIBEIRÃO PRETO S","Bandeira":"RAIA","Cidade":"RIBEIRAO PRETO","CEP":"14026-900","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":3001,"Farmácia":"SP PAULISTA 4","Bandeira":"DROGASIL","Cidade":"SAO PAULO","CEP":"01327-900","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":5,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":3045,"Farmácia":"MC CRUZ DAS ALMAS 1","Bandeira":"DROGASIL","Cidade":"MACEIO","CEP":"57038-000","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":1,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":3058,"Farmácia":"MN PQ 10 NOVEMBRO 1","Bandeira":"DROGASIL","Cidade":"MANAUS","CEP":"69050-902","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":3063,"Farmácia":"ALPHAVILLE G","Bandeira":"RAIA","Cidade":"BARUERI","CEP":"06460-030","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":3083,"Farmácia":"SOROCABA L","Bandeira":"RAIA","Cidade":"VOTORANTIM","CEP":"18110-650","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":1,"Recomendação":"","Status":"Ativa"},{"Java":3084,"Farmácia":"FT PAPICU 2","Bandeira":"DROGASIL","Cidade":"FORTALEZA","CEP":"60176-065","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":1,"Recomendação":"","Status":"Ativa"},{"Java":3127,"Farmácia":"CP JARDIM DO LAGO 2","Bandeira":"DROGASIL","Cidade":"CAMPINAS","CEP":"13050-913","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":1,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":3166,"Farmácia":"TS PORENQUANTO 1","Bandeira":"DROGASIL","Cidade":"TERESINA","CEP":"64003-087","Leadtime":"AGENDADA","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"","Status":"Ativa"},{"Java":3244,"Farmácia":"BH CAICARAS A","Bandeira":"RAIA","Cidade":"BELO HORIZONTE","CEP":"31250-900","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":2,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":3285,"Farmácia":"PA MENINO DEUS C","Bandeira":"RAIA","Cidade":"PORTO ALEGRE","CEP":"90110-001","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":3355,"Farmácia":"BH VENDA NOVA A","Bandeira":"RAIA","Cidade":"BELO HORIZONTE","CEP":"31744-007","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":3516,"Farmácia":"BH SÃO PEDRO A","Bandeira":"RAIA","Cidade":"BELO HORIZONTE","CEP":"30330-010","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":3,"Recomendação":"","Status":"Ativa"},{"Java":3547,"Farmácia":"LAURO DE FREITAS 7","Bandeira":"DROGASIL","Cidade":"LAURO DE FREITAS","CEP":"42702-400","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":1,"Recomendação":"","Status":"Ativa"},{"Java":3550,"Farmácia":"LONDRINA O","Bandeira":"RAIA","Cidade":"LONDRINA","CEP":"86050-901","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":3858,"Farmácia":"FL CENTRO F","Bandeira":"RAIA","Cidade":"FLORIANOPOLIS","CEP":"88015-902","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":0,"Recomendação":"","Status":"Ativa"},{"Java":3882,"Farmácia":"FT EDSON QUEIROZ 1","Bandeira":"DROGASIL","Cidade":"FORTALEZA","CEP":"60811-900","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":1,"Recomendação":"","Status":"Ativa"},{"Java":3899,"Farmácia":"BH UNIÃO A","Bandeira":"RAIA","Cidade":"BELO HORIZONTE","CEP":"31160-900","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":1,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":3914,"Farmácia":"VILA GUILHERME 2","Bandeira":"DROGASIL","Cidade":"SAO PAULO","CEP":"02089-900","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":1,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":4021,"Farmácia":"SL BEQUIMÃO 1","Bandeira":"DROGASIL","Cidade":"SAO LUIS","CEP":"65074-115","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":2,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":4130,"Farmácia":"SL ANIL 2","Bandeira":"DROGASIL","Cidade":"SAO LUIS","CEP":"65065-470","Leadtime":"AGENDADA","Eficiência":"Desconhecido","Vizinhas 5km":1,"Recomendação":"","Status":"Ativa"},{"Java":4152,"Farmácia":"SP TUCURUVI 6","Bandeira":"DROGASIL","Cidade":"SAO PAULO","CEP":"02267-000","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":1,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":4191,"Farmácia":"CAPAO REDONDO 3","Bandeira":"DROGASIL","Cidade":"SAO PAULO","CEP":"05858-002","Leadtime":"60 Minutos","Eficiência":"Bom","Vizinhas 5km":1,"Recomendação":"","Status":"Ativa"},{"Java":4234,"Farmácia":"SANTO ANDRE 21","Bandeira":"DROGASIL","Cidade":"SANTO ANDRE","CEP":"09080-510","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":4351,"Farmácia":"DF TAGUATINGA 13","Bandeira":"DROGASIL","Cidade":"BRASILIA","CEP":"72006-241","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":1,"Recomendação":"","Status":"Ativa"},{"Java":4358,"Farmácia":"MOGI DAS CRUZES 11","Bandeira":"DROGASIL","Cidade":"MOGI DAS CRUZES","CEP":"08780-000","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":0,"Recomendação":"","Status":"Ativa"},{"Java":4501,"Farmácia":"DF CRUZEIRO 6","Bandeira":"DROGASIL","Cidade":"BRASILIA","CEP":"70660-900","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":1,"Recomendação":"","Status":"Ativa"},{"Java":4911,"Farmácia":"SL SANTA EULALIA 1","Bandeira":"DROGASIL","Cidade":"SAO LUIS","CEP":"65076-820","Leadtime":"AGENDADA","Eficiência":"Desconhecido","Vizinhas 5km":1,"Recomendação":"","Status":"Ativa"},{"Java":4972,"Farmácia":"BH SANTA EFIGENIA C","Bandeira":"RAIA","Cidade":"BELO HORIZONTE","CEP":"30260-070","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":2,"Recomendação":"","Status":"Ativa"},{"Java":5052,"Farmácia":"SV PATAMARES 2","Bandeira":"DROGASIL","Cidade":"SALVADOR","CEP":"41730-101","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":0,"Recomendação":"","Status":"Ativa"},{"Java":5192,"Farmácia":"SV CAM ARVORES 5","Bandeira":"DROGASIL","Cidade":"SALVADOR","CEP":"41820-908","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":2,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":5233,"Farmácia":"FT PRESID KENNEDY 2","Bandeira":"DROGASIL","Cidade":"FORTALEZA","CEP":"60355-512","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":5288,"Farmácia":"PV PONTES PINTO 1","Bandeira":"DROGASIL","Cidade":"PORTO VELHO","CEP":"76820-408","Leadtime":"120 Minutos","Eficiência":"Moderado","Vizinhas 5km":0,"Recomendação":"","Status":"Ativa"},{"Java":5352,"Farmácia":"DF TAGUATINGA 18","Bandeira":"DROGASIL","Cidade":"BRASILIA","CEP":"72145-450","Leadtime":"60 Minutos","Eficiência":"Bom","Vizinhas 5km":0,"Recomendação":"","Status":"Ativa"},{"Java":5378,"Farmácia":"SP JARAGUA 3","Bandeira":"DROGASIL","Cidade":"SAO PAULO","CEP":"02984-035","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":0,"Recomendação":"Não abrir","Status":"Expansão"},{"Java":5534,"Farmácia":"BH STO AGOSTINHO B","Bandeira":"RAIA","Cidade":"BELO HORIZONTE","CEP":"30180-915","Leadtime":"NÃO","Eficiência":"Desconhecido","Vizinhas 5km":3,"Recomendação":"Não abrir","Status":"Expansão"}];
+
+// Enrich data
+const DATA = RAW_DATA.map(d => {
+  const otd = OTD_MAP[d.Java] || null;
+  const lt = LT_MAP[d.Java] || null;
+  const acesso = getAcesso(d);
+  const efic = d.Status==='Ativa' ? eficFromOTD(otd) : d.Eficiência;
+  const slaSug = d.Status==='Ativa' ? slaSugest(otd) : '—';
+  const slaOf = slaOfert(d);
+  const horario = 'Seg-Sáb: 10h–22h / Dom: 12h–20h';
+  return {...d, OTD:otd, LT_Perc:lt, Acesso:acesso, Efic_Real:efic, SLA_Sug:slaSug, SLA_Ofert:slaOf, Horario:horario};
+});
+
+const ATIVAS = DATA.filter(d=>d.Status==='Ativa');
+const EXPANSAO = DATA.filter(d=>d.Status==='Expansão');
+
+// Avg OTD
+const avgOTD = (ATIVAS.reduce((s,d)=>s+(d.OTD||0),0)/ATIVAS.length).toFixed(1);
+document.getElementById('kpi-otd-avg').textContent = avgOTD+'%';
+document.getElementById('kpi-otd-avg').className = 'kpi-val '+(parseFloat(avgOTD)>=90?'c-ok':parseFloat(avgOTD)>=80?'c-warn':'c-danger');
+const avgViz = (EXPANSAO.reduce((s,d)=>s+d['Vizinhas 5km'],0)/EXPANSAO.length).toFixed(1);
+document.getElementById('kpi-avg-viz').textContent = avgViz;
+
+// Populate city dropdowns
+const cities = [...new Set(DATA.map(d=>d.Cidade))].sort();
+['rk-cidade','exp-cidade'].forEach(id => {
+  const el = document.getElementById(id);
+  if(el) cities.forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; el.appendChild(o); });
+});
+
+// ══════ CHART HELPERS ══════
+const COLORS = {accent:'#00c6ff',purple:'#8b5cf6',green:'#10b981',warn:'#f59e0b',danger:'#ef4444',muted:'#5a7a9a'};
+Chart.defaults.color='#5a7a9a';
+Chart.defaults.font={family:'DM Sans',size:11};
+const gridOpts={grid:{color:'rgba(30,48,80,.5)'},ticks:{color:'#5a7a9a'}};
+function ltColor(lt){return lt==='60 Minutos'?COLORS.green:lt==='120 Minutos'?COLORS.warn:lt==='AGENDADA'?COLORS.purple:COLORS.danger}
+function otdColor(v){return v>=90?COLORS.green:v>=85?COLORS.accent:v>=80?COLORS.warn:COLORS.danger}
+function eficBadge(e,otd){
+  if(e==='Bom'||otd>=85) return `<span class="badge b-bom">⚡ Bom</span>`;
+  if(e==='Moderado'||(otd>=80)) return `<span class="badge b-mod">⚠ Moderado</span>`;
+  if(otd<80&&otd!==null) return `<span class="badge b-ruim">🔴 Ruim</span>`;
+  if(e==='Desconhecido') return `<span class="badge b-desc">❓ S/ Dados</span>`;
+  return `<span class="badge b-agen">🕐 Agendada</span>`;
+}
+function bandBadge(b){return b==='RAIA'?'<span class="badge b-raia">RAIA</span>':'<span class="badge b-drog">DROGASIL</span>'}
+function accessBadge(a){return a==='FÁCIL ACESSO'?'<span class="badge b-facil">✅ Fácil</span>':'<span class="badge b-viavel">⚡ Viável</span>'}
+function slaBadge(s){
+  if(s==='Turbo 60') return `<span class="badge b-bom">${s}</span>`;
+  if(s==='Turbo 120') return `<span class="badge b-mod">${s}</span>`;
+  if(s==='D+1') return `<span class="badge b-ruim">${s}</span>`;
+  if(s==='Agendada') return `<span class="badge b-agen">${s}</span>`;
+  return `<span class="badge b-desc">${s}</span>`;
+}
+function pct(v){return v!==null&&v!==undefined?v.toFixed(1)+'%':'—'}
+function otdBar(v){if(v===null||v===undefined)return'—';const w=Math.max(0,Math.min(100,v));return`${v.toFixed(1)}%<span class="otd-bar"><span class="otd-fill" style="width:${w}%;background:${otdColor(v)}"></span></span>`}
+
+// ══════ CHARTS: OVERVIEW ══════
+let ovCharts = {};
+function updateOverviewCharts() {
+  const band = document.getElementById('ov-bandeira').value;
+  const efic = document.getElementById('ov-efic').value;
+  const lt = document.getElementById('ov-lt').value;
+  let filtered = ATIVAS.filter(d => (!band||d.Bandeira===band)&&(!efic||d.Efic_Real===efic)&&(!lt||d.Leadtime===lt));
+  document.getElementById('ov-count').textContent = `${filtered.length} filiais`;
+
+  // OTD bar
+  const labels = filtered.map(d=>d['Farmácia'].split(' ').slice(0,2).join(' '));
+  const otdVals = filtered.map(d=>d.OTD||0);
+  if(ovCharts.otd){ ovCharts.otd.data.labels=labels; ovCharts.otd.data.datasets[0].data=otdVals; ovCharts.otd.data.datasets[0].backgroundColor=otdVals.map(v=>otdColor(v)); ovCharts.otd.update(); }
+  else ovCharts.otd = new Chart(document.getElementById('ch-otd-bar'),{type:'bar',data:{labels,datasets:[{label:'OTD %',data:otdVals,backgroundColor:otdVals.map(v=>otdColor(v)),borderRadius:4}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{...gridOpts,max:100,min:40},y:{...gridOpts,ticks:{font:{size:9}}}},maintainAspectRatio:false}});
+
+  // LT dist
+  const ltCnts={};filtered.forEach(d=>{ltCnts[d.Leadtime]=(ltCnts[d.Leadtime]||0)+1});
+  if(ovCharts.lt){ovCharts.lt.data.labels=Object.keys(ltCnts);ovCharts.lt.data.datasets[0].data=Object.values(ltCnts);ovCharts.lt.update();}
+  else ovCharts.lt=new Chart(document.getElementById('ch-lt-dist'),{type:'doughnut',data:{labels:Object.keys(ltCnts),datasets:[{data:Object.values(ltCnts),backgroundColor:Object.keys(ltCnts).map(k=>ltColor(k)),borderWidth:0}]},options:{cutout:'62%',plugins:{legend:{position:'bottom',labels:{padding:14}}}}});
+
+  // Bandeira
+  const bCnt={};filtered.forEach(d=>{bCnt[d.Bandeira]=(bCnt[d.Bandeira]||0)+1});
+  if(ovCharts.band){ovCharts.band.data.labels=Object.keys(bCnt);ovCharts.band.data.datasets[0].data=Object.values(bCnt);ovCharts.band.update();}
+  else ovCharts.band=new Chart(document.getElementById('ch-bandeira'),{type:'doughnut',data:{labels:Object.keys(bCnt),datasets:[{data:Object.values(bCnt),backgroundColor:[COLORS.accent,COLORS.purple],borderWidth:0}]},options:{cutout:'60%',plugins:{legend:{position:'bottom',labels:{padding:14}}}}});
+
+  // Cities
+  const cCnt={}; filtered.forEach(d=>{cCnt[d.Cidade]=(cCnt[d.Cidade]||0)+1});
+  const topC=Object.entries(cCnt).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  if(ovCharts.city){ovCharts.city.data.labels=topC.map(x=>x[0]);ovCharts.city.data.datasets[0].data=topC.map(x=>x[1]);ovCharts.city.update();}
+  else ovCharts.city=new Chart(document.getElementById('ch-cidades'),{type:'bar',data:{labels:topC.map(x=>x[0]),datasets:[{label:'Filiais',data:topC.map(x=>x[1]),backgroundColor:COLORS.purple,borderRadius:5}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:gridOpts,y:{...gridOpts,ticks:{font:{size:10}}}}}});
+
+  // Vizinhas
+  const vCnt={0:0,1:0,2:0,'3+':0}; filtered.forEach(d=>{const v=d['Vizinhas 5km'];if(v===0)vCnt[0]++;else if(v===1)vCnt[1]++;else if(v===2)vCnt[2]++;else vCnt['3+']+= 1});
+  if(ovCharts.viz){ovCharts.viz.data.datasets[0].data=Object.values(vCnt);ovCharts.viz.update();}
+  else ovCharts.viz=new Chart(document.getElementById('ch-vizinhas'),{type:'bar',data:{labels:['0','1','2','3+'].map(x=>`${x} concorr.`),datasets:[{label:'Filiais',data:Object.values(vCnt),backgroundColor:[COLORS.green,COLORS.accent,COLORS.warn,COLORS.danger],borderRadius:5}]},options:{plugins:{legend:{display:false}},scales:{x:gridOpts,y:gridOpts}}});
+
+  // Scatter OTD vs LT%
+  const sData = filtered.filter(d=>d.OTD&&d.LT_Perc).map(d=>({x:d.LT_Perc,y:d.OTD,r:6}));
+  if(ovCharts.scat){ovCharts.scat.data.datasets[0].data=sData;ovCharts.scat.update();}
+  else ovCharts.scat=new Chart(document.getElementById('ch-scatter-ov'),{type:'bubble',data:{datasets:[{label:'Filiais',data:sData,backgroundColor:sData.map(d=>otdColor(d.y)+'cc')}]},options:{plugins:{legend:{display:false}},scales:{x:{...gridOpts,title:{display:true,text:'% Lead Time',color:'#5a7a9a'}},y:{...gridOpts,title:{display:true,text:'% OTD',color:'#5a7a9a'},min:50,max:100}}}});
+}
+updateOverviewCharts();
+
+// ══════ RANKINGS ══════
+let rkSortExp=null,rkSortDir=1;
+function buildRankings(){
+  const band=document.getElementById('rk-bandeira').value;
+  const city=document.getElementById('rk-cidade').value;
+  const n=parseInt(document.getElementById('rk-n').value)||10;
+  let filtered=ATIVAS.filter(d=>(!band||d.Bandeira===band)&&(!city||d.Cidade===city));
+  const sorted=[...filtered].sort((a,b)=>(b.OTD||0)-(a.OTD||0));
+  const best=sorted.slice(0,n);
+  const worst=[...filtered].sort((a,b)=>(a.OTD||0)-(b.OTD||0)).slice(0,n);
+  // Opportunities: expansion with low competition
+  const oppF=EXPANSAO.filter(d=>(!band||d.Bandeira===band)&&(!city||d.Cidade===city)).sort((a,b)=>a['Vizinhas 5km']-b['Vizinhas 5km']).slice(0,n);
+
+  function rankHTML(items,type){
+    return items.map((d,i)=>{
+      const otdVal=d.OTD!==null?d.OTD:null;
+      const ltVal=d.LT_Perc!==null?d.LT_Perc:null;
+      const num=i+1;
+      const numStyle=type==='worst'?'color:#ef4444':type==='opp'?'color:#a78bfa':'color:var(--muted)';
+      let right='';
+      if(type!=='opp'&&otdVal!==null){
+        right=`<div class="rank-right"><div class="otd-val" style="color:${otdColor(otdVal)}">${otdVal.toFixed(1)}%</div><div class="lt-val">LT: ${ltVal?ltVal.toFixed(1)+'%':'—'}</div></div>`;
+      } else if(type==='opp'){
+        right=`<div class="rank-right"><div style="font-size:10px;color:${COLORS.purple}">${d['Vizinhas 5km']} concorr.</div><div class="lt-val">${d.Leadtime}</div></div>`;
+      }
+      return `<li class="rank-item"><span class="rank-n" style="${numStyle}">${num}</span><div class="rank-info"><div class="rank-name">${d['Farmácia']}</div><div class="rank-sub">${d.Cidade} · ${d.Bandeira}</div></div>${right}</li>`;
+    }).join('');
+  }
+
+  document.getElementById('rk-best').innerHTML=rankHTML(best,'best');
+  document.getElementById('rk-worst').innerHTML=rankHTML(worst,'worst');
+  document.getElementById('rk-opp').innerHTML=rankHTML(oppF,'opp');
+
+  // Compare chart
+  const compareLabels=[...best.slice(0,6).map(d=>d['Farmácia'].split(' ').slice(0,2).join(' '))];
+  const compareOTD=best.slice(0,6).map(d=>d.OTD||0);
+  const compareWorstLabels=worst.slice(0,6).map(d=>d['Farmácia'].split(' ').slice(0,2).join(' '));
+  const compareWorstOTD=worst.slice(0,6).map(d=>d.OTD||0);
+  const allLbls=[...compareLabels,...compareWorstLabels];
+  const allVals=[...compareOTD,...compareWorstOTD];
+  const allColors=[...compareOTD.map(v=>otdColor(v)),...compareWorstOTD.map(v=>otdColor(v))];
+  const cmpEl=document.getElementById('ch-rk-compare');
+  if(cmpEl._chart){cmpEl._chart.destroy()}
+  cmpEl._chart=new Chart(cmpEl,{type:'bar',data:{labels:allLbls,datasets:[{label:'OTD %',data:allVals,backgroundColor:allColors,borderRadius:4}]},options:{plugins:{legend:{display:false}},scales:{x:{...gridOpts,ticks:{font:{size:9}}},y:{...gridOpts,min:50,max:100}}}});
+
+  // LT chart
+  const ltMap2={'60 Minutos':[],'120 Minutos':[],'AGENDADA':[]};
+  filtered.forEach(d=>{if(ltMap2[d.Leadtime]&&d.OTD)ltMap2[d.Leadtime].push(d.OTD)});
+  const ltLbls=Object.keys(ltMap2).filter(k=>ltMap2[k].length>0);
+  const ltAvgs=ltLbls.map(k=>(ltMap2[k].reduce((a,b)=>a+b,0)/ltMap2[k].length).toFixed(1));
+  const ltEl=document.getElementById('ch-rk-lt');
+  if(ltEl._chart){ltEl._chart.destroy()}
+  ltEl._chart=new Chart(ltEl,{type:'bar',data:{labels:ltLbls,datasets:[{label:'OTD Médio %',data:ltAvgs,backgroundColor:ltLbls.map(k=>ltColor(k)),borderRadius:5}]},options:{plugins:{legend:{display:false}},scales:{x:gridOpts,y:{...gridOpts,min:40,max:100}}}});
+}
+buildRankings();
+
+// ══════ DETAIL TABLE ══════
+let dtSort={col:'Java',dir:1},dtFiltered=[...DATA];
+function renderDetail(){
+  const search=document.getElementById('dt-search').value.toLowerCase();
+  const status=document.getElementById('dt-status').value;
+  const band=document.getElementById('dt-bandeira').value;
+  const efic=document.getElementById('dt-efic').value;
+  const lt=document.getElementById('dt-lt').value;
+  const acesso=document.getElementById('dt-acesso').value;
+  const slaSugF=document.getElementById('dt-sla-ofert').value;
+  dtFiltered=DATA.filter(d=>{
+    const ms=!search||(d['Farmácia'].toLowerCase().includes(search)||d.Cidade.toLowerCase().includes(search)||String(d.Java).includes(search));
+    const mst=!status||d.Status===status;
+    const mb=!band||d.Bandeira===band;
+    const me=!efic||(efic==='Bom'&&d.OTD>=85)||(efic==='Moderado'&&d.OTD>=80&&d.OTD<85)||(efic==='Ruim'&&d.OTD<80&&d.OTD!==null)||(efic===d.Eficiência);
+    const ml=!lt||d.Leadtime===lt;
+    const ma=!acesso||d.Acesso===acesso;
+    const ms2=!slaSugF||d.SLA_Sug===slaSugF||d.SLA_Ofert===slaSugF;
+    return ms&&mst&&mb&&me&&ml&&ma&&ms2;
+  });
+  dtFiltered.sort((a,b)=>{
+    let av=a[dtSort.col]??'',bv=b[dtSort.col]??'';
+    if(typeof av==='number'&&typeof bv==='number') return (av-bv)*dtSort.dir;
+    return String(av).localeCompare(String(bv))*dtSort.dir;
+  });
+  document.getElementById('dt-count').textContent=`${dtFiltered.length} de ${DATA.length} registros`;
+  document.getElementById('dt-count-row').textContent=`Exibindo ${dtFiltered.length} de ${DATA.length} registros`;
+  const body=document.getElementById('detail-body');
+  body.innerHTML=dtFiltered.map(d=>`
+    <tr>
+      <td style="color:var(--muted);font-size:11px">${d.Java}</td>
+      <td style="font-weight:500;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d['Farmácia']}</td>
+      <td>${bandBadge(d.Bandeira)}</td>
+      <td style="font-size:11px">${d.Cidade}</td>
+      <td style="color:var(--muted);font-size:10px">${d.CEP}</td>
+      <td><span style="color:${ltColor(d.Leadtime)};font-weight:500;font-size:11px">${d.Leadtime}</span></td>
+      <td>${d.LT_Perc!==null?otdBar(d.LT_Perc):'<span style="color:var(--muted)">—</span>'}</td>
+      <td>${d.OTD!==null?otdBar(d.OTD):'<span style="color:var(--muted)">—</span>'}</td>
+      <td>${eficBadge(d.Efic_Real,d.OTD)}</td>
+      <td style="text-align:center">${d['Vizinhas 5km']}</td>
+      <td>${accessBadge(d.Acesso)}</td>
+      <td>${slaBadge(d.SLA_Ofert)}</td>
+      <td>${slaBadge(d.SLA_Sug)}</td>
+      <td><span class="badge ${d.Status==='Ativa'?'b-ativa':'b-exp'}">${d.Status}</span></td>
+      <td style="font-size:10px;color:var(--muted)">${d.Recomendação||'—'}</td>
+    </tr>`).join('');
+}
+function sortTable(col){if(dtSort.col===col)dtSort.dir*=-1;else{dtSort.col=col;dtSort.dir=1;}renderDetail();}
+renderDetail();
+
+// Detail SLA chart
+new Chart(document.getElementById('ch-sla-compare'),{type:'bar',data:{
+  labels:['Turbo 60\n(Ofert)','Turbo 120\n(Ofert)','Agendada\n(Ofert)','Turbo 60\n(Sug)','Turbo 120\n(Sug)','D+1\n(Sug)'],
+  datasets:[{label:'Qtd Filiais',data:[
+    ATIVAS.filter(d=>d.SLA_Ofert==='Turbo 60').length,
+    ATIVAS.filter(d=>d.SLA_Ofert==='Turbo 120').length,
+    ATIVAS.filter(d=>d.SLA_Ofert==='Agendada').length,
+    ATIVAS.filter(d=>d.SLA_Sug==='Turbo 60').length,
+    ATIVAS.filter(d=>d.SLA_Sug==='Turbo 120').length,
+    ATIVAS.filter(d=>d.SLA_Sug==='D+1').length
+  ],backgroundColor:[COLORS.green,COLORS.warn,COLORS.purple,COLORS.green+'99',COLORS.warn+'99',COLORS.danger+'99'],borderRadius:5}]
+},options:{plugins:{legend:{display:false}},scales:{x:{...gridOpts,ticks:{font:{size:9}}},y:gridOpts}}});
+
+// OTD by LT
+const ltGroups={'60 Minutos':[],'120 Minutos':[],'AGENDADA':[]};
+ATIVAS.forEach(d=>{if(ltGroups[d.Leadtime]&&d.OTD!==null)ltGroups[d.Leadtime].push(d.OTD)});
+new Chart(document.getElementById('ch-otd-lt'),{type:'bar',data:{
+  labels:Object.keys(ltGroups).map(k=>`${k}\n(${ltGroups[k].length} filiais)`),
+  datasets:[{
+    label:'OTD Médio %',
+    data:Object.values(ltGroups).map(arr=>arr.length>0?(arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(1):0),
+    backgroundColor:Object.keys(ltGroups).map(k=>ltColor(k)),
+    borderRadius:6
+  }]
+},options:{plugins:{legend:{display:false}},scales:{x:{...gridOpts,ticks:{font:{size:10}}},y:{...gridOpts,min:40,max:100}}}});
+
+// ══════ EXPANSION ══════
+let expSort={col:'Vizinhas 5km',dir:1};
+function renderExpansion(){
+  const search=document.getElementById('exp-search').value.toLowerCase();
+  const band=document.getElementById('exp-bandeira').value;
+  const city=document.getElementById('exp-cidade').value;
+  const viz=document.getElementById('exp-viz').value;
+  // Opp cards: from ativas with "Abrir próxima" original rec
+  const originalAbrir=DATA.filter(d=>d.Status==='Ativa'&&(d.OTD>=89||d['Farmácia']==='CAPAO REDONDO 3'||d['Farmácia']==='DF TAGUATINGA 18'));
+  document.getElementById('opp-cards').innerHTML=originalAbrir.map(d=>`
+    <div class="opp-card" style="border-color:rgba(16,185,129,.3)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div><div class="opp-name">${d['Farmácia']}</div><div class="opp-city">${d.Cidade} · Java ${d.Java}</div></div>
+        <span style="font-size:20px">✅</span>
+      </div>
+      <div class="opp-tags">
+        <span class="badge b-bom">OTD ${d.OTD?.toFixed(1)||'—'}%</span>
+        <span class="badge b-bom">LT ${d.LT_Perc?.toFixed(1)||'—'}%</span>
+        <span class="badge b-mod">⏱ ${d.Leadtime}</span>
+        <span class="badge b-desc">${d['Vizinhas 5km']} concorr.</span>
+        ${accessBadge(d.Acesso)}
+      </div>
+      <div style="margin-top:10px;font-size:11px;color:var(--muted)">Alta eficiência + baixa concorrência → Indicada para abertura de nova unidade próxima.</div>
+    </div>`).join('');
+
+  // Ativas body
+  let ativasF=[...ATIVAS].filter(d=>(!search||(d['Farmácia'].toLowerCase().includes(search)||d.Cidade.toLowerCase().includes(search)))&&(!band||d.Bandeira===band)&&(!city||d.Cidade===city));
+  ativasF.sort((a,b)=>((b.OTD||0)-(a.OTD||0)));
+  document.getElementById('exp-count').textContent=`${ativasF.length} filiais`;
+  document.getElementById('exp-ativas-body').innerHTML=ativasF.map(d=>{
+    const sug=d.OTD>=85?'Reduzir LT p/ Turbo 60':d.OTD>=80?'Melhorar OTD p/ ≥85%':'Urgente: OTD crítico → D+1';
+    const col=d.OTD>=85?'color:var(--accent3)':d.OTD>=80?'color:var(--warn)':'color:var(--danger)';
+    return `<tr>
+      <td style="font-weight:500">${d['Farmácia']}</td>
+      <td style="font-size:11px;color:var(--muted)">${d.Cidade}</td>
+      <td>${bandBadge(d.Bandeira)}</td>
+      <td>${d.OTD!==null?otdBar(d.OTD):'—'}</td>
+      <td>${d.LT_Perc!==null?otdBar(d.LT_Perc):'—'}</td>
+      <td><span style="color:${ltColor(d.Leadtime)};font-size:11px">${d.Leadtime}</span></td>
+      <td style="text-align:center">${d['Vizinhas 5km']}</td>
+      <td>${accessBadge(d.Acesso)}</td>
+      <td style="font-size:11px;${col}">${sug}</td></tr>`;
+  }).join('');
+
+  // Expansion charts
+  const vCnt2={'0 concorr.':0,'1 concorr.':0,'2 concorr.':0,'3+ concorr.':0};
+  EXPANSAO.forEach(d=>{const v=d['Vizinhas 5km'];if(v===0)vCnt2['0 concorr.']++;else if(v===1)vCnt2['1 concorr.']++;else if(v===2)vCnt2['2 concorr.']++;else vCnt2['3+ concorr.']++;});
+  const compEl=document.getElementById('ch-exp-competition');
+  if(compEl._ch){compEl._ch.destroy()}
+  compEl._ch=new Chart(compEl,{type:'doughnut',data:{labels:Object.keys(vCnt2),datasets:[{data:Object.values(vCnt2),backgroundColor:[COLORS.green,COLORS.accent,COLORS.warn,COLORS.danger],borderWidth:0}]},options:{cutout:'55%',plugins:{legend:{position:'bottom',labels:{padding:12}}}}});
+  const cMap={};EXPANSAO.forEach(d=>{cMap[d.Cidade]=(cMap[d.Cidade]||0)+1});
+  const top8=Object.entries(cMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const cityEl=document.getElementById('ch-exp-cities');
+  if(cityEl._ch){cityEl._ch.destroy()}
+  cityEl._ch=new Chart(cityEl,{type:'bar',data:{labels:top8.map(x=>x[0]),datasets:[{label:'Locais',data:top8.map(x=>x[1]),backgroundColor:COLORS.purple,borderRadius:5}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:gridOpts,y:{...gridOpts,ticks:{font:{size:10}}}}}});
+}
+renderExpansion();
+
+// ══════ SLA TABLE ══════
+let slaTblSort={col:'OTD',dir:-1};
+function renderSLATable(){
+  const search=document.getElementById('sla-search').value.toLowerCase();
+  const band=document.getElementById('sla-bandeira').value;
+  const sug=document.getElementById('sla-sug').value;
+  let f=ATIVAS.filter(d=>(!search||d['Farmácia'].toLowerCase().includes(search))&&(!band||d.Bandeira===band)&&(!sug||d.SLA_Sug===sug));
+  f.sort((a,b)=>{let av=a[slaTblSort.col]??0,bv=b[slaTblSort.col]??0;return (typeof av==='number'?av-bv:String(av).localeCompare(String(bv)))*slaTblSort.dir});
+  document.getElementById('sla-count').textContent=`${f.length} filiais`;
+  document.getElementById('sla-count-row').textContent=`${f.length} de ${ATIVAS.length} filiais ativas`;
+  document.getElementById('sla-table-body').innerHTML=f.map(d=>{
+    const match=d.SLA_Ofert===d.SLA_Sug;
+    const ajuste=match?'<span style="color:var(--accent3);font-size:11px">✅ Adequado</span>':`<span style="color:var(--warn);font-size:11px">⚠ Alterar para ${d.SLA_Sug}</span>`;
+    return `<tr>
+      <td style="font-weight:500">${d['Farmácia']}</td>
+      <td style="font-size:11px;color:var(--muted)">${d.Cidade}</td>
+      <td>${bandBadge(d.Bandeira)}</td>
+      <td>${d.OTD!==null?otdBar(d.OTD):'—'}</td>
+      <td>${d.LT_Perc!==null?otdBar(d.LT_Perc):'—'}</td>
+      <td><span style="color:${ltColor(d.Leadtime)};font-size:11px">${d.Leadtime}</span></td>
+      <td>${slaBadge(d.SLA_Ofert)}</td>
+      <td>${slaBadge(d.SLA_Sug)}</td>
+      <td style="font-size:10px;color:var(--muted)">${d.Horario}</td>
+      <td>${ajuste}</td></tr>`;
+  }).join('');
+}
+function sortSLATable(col){if(slaTblSort.col===col)slaTblSort.dir*=-1;else{slaTblSort.col=col;slaTblSort.dir=-1;}renderSLATable();}
+renderSLATable();
+
+// SLA dist chart
+const slaDistMap={};ATIVAS.forEach(d=>{slaDistMap[d.SLA_Sug]=(slaDistMap[d.SLA_Sug]||0)+1});
+new Chart(document.getElementById('ch-sla-dist'),{type:'doughnut',data:{labels:Object.keys(slaDistMap),datasets:[{data:Object.values(slaDistMap),backgroundColor:[COLORS.green,COLORS.warn,COLORS.danger,COLORS.purple],borderWidth:0}]},options:{cutout:'60%',plugins:{legend:{position:'bottom',labels:{padding:14}}}}});
+
+// SLA OTD avg chart
+const slaOTDMap={'Turbo 60':[],'Turbo 120':[],'D+1':[]};
+ATIVAS.forEach(d=>{if(slaOTDMap[d.SLA_Sug]&&d.OTD!==null)slaOTDMap[d.SLA_Sug].push(d.OTD)});
+const slaLabels2=Object.keys(slaOTDMap).filter(k=>slaOTDMap[k].length>0);
+new Chart(document.getElementById('ch-sla-otd'),{type:'bar',data:{labels:slaLabels2.map(k=>`${k}\n(${slaOTDMap[k].length} filiais)`),datasets:[{label:'OTD Médio %',data:slaLabels2.map(k=>(slaOTDMap[k].reduce((a,b)=>a+b,0)/slaOTDMap[k].length).toFixed(1)),backgroundColor:slaLabels2.map(k=>k==='Turbo 60'?COLORS.green:k==='Turbo 120'?COLORS.warn:COLORS.danger),borderRadius:6}]},options:{plugins:{legend:{display:false}},scales:{x:{...gridOpts,ticks:{font:{size:10}}},y:{...gridOpts,min:40,max:100}}}});
+
+// ══════ TAB SWITCHING ══════
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-'+tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ══════ RESET FILTERS ══════
+function resetFilter(prefix){
+  document.querySelectorAll(`[id^="${prefix}-"]`).forEach(el=>{
+    if(el.tagName==='SELECT') el.value='';
+    if(el.tagName==='INPUT') el.value='';
+  });
+  if(prefix==='ov') updateOverviewCharts();
+  else if(prefix==='rk') buildRankings();
+  else if(prefix==='dt') renderDetail();
+  else if(prefix==='exp') renderExpansion();
+  else if(prefix==='sla') renderSLATable();
+}
+</script>
+</body>
+</html>
