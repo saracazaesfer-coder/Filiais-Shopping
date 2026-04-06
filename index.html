@@ -11,7 +11,7 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;font-size:13px}
 ::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:var(--sf)}::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
-.hdr{background:linear-gradient(135deg,#091525,#0f1c2e);border-bottom:1px solid var(--bd);padding:13px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
+.hdr{backgrounad:linear-gradient(135deg,#091525,#0f1c2e);border-bottom:1px solid var(--bd);padding:13px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
 .hdr-logo{display:flex;align-items:center;gap:11px}
 .hdr-icon{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--ac),var(--ac2));display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
 .hdr-t{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;line-height:1.2}
@@ -255,6 +255,7 @@ tbody td{padding:8px 11px;vertical-align:middle}
           <th onclick="srt('SLA_Sg','dt')">SLA Sugerido<span class="si"></span></th>
           <th onclick="srt('Status','dt')">Status<span class="si"></span></th>
           <th onclick="srt('Rec','dt')">Recomendação<span class="si"></span></th>
+          <th>📍 Localização</th>
         </tr></thead>
         <tbody id="dt-body"></tbody>
       </table>
@@ -299,6 +300,7 @@ tbody td{padding:8px 11px;vertical-align:middle}
         <th onclick="srt('Leadtime','exp')">Lead Time<span class="si"></span></th>
         <th onclick="srt('Viz','exp')">Concorr.<span class="si"></span></th>
         <th onclick="srt('AcessoR','exp')">Acesso<span class="si"></span></th>
+        <th>📍 Localização</th>
         <th>Ação Sugerida</th>
       </tr></thead>
       <tbody id="exp-body"></tbody></table>
@@ -494,6 +496,161 @@ tbody td{padding:8px 11px;vertical-align:middle}
 <!-- export bar injection moved to main script -->
 
 <script>
+// ── COORDENADAS EXATAS — Entrada do Shopping (134 locais) ──
+const COORDS_MAP = {
+  "CT BARIGUI A": [-25.435388,-49.31646],
+  "RJ BARRA TIJUCA G": [-22.997718,-43.357814],
+  "SP CH ST ANTONIO A": [-23.62263,-46.698461],
+  "RJ LEBLON C": [-22.9823,-43.217005],
+  "RJ BARRA TIJUCA H": [-22.998722,-43.360501],
+  "BH BELVEDERE A": [-19.974528,-43.944935],
+  "S J DOS CAMPOS E": [-23.20455,-45.908275],
+  "SP CAMPO LIMPO 2": [-23.649118,-46.757458],
+  "SP JAGUARE 2": [-23.547604,-46.757283],
+  "SP FARIA LIMA 1": [-23.572974,-46.695911],
+  "SP CH ST ANTONIO 1": [-23.623223,-46.698532],
+  "SP PANAMBY 2": [-23.631372,-46.736025],
+  "SP ANALIA FRANCO 1": [-23.560913,-46.560201],
+  "CP CH PRIMAVERA 1": [-22.849293,-47.062464],
+  "SP CHACARA FLORA 1": [-23.655025,-46.701149],
+  "SP PAULISTA 2": [-23.558199,-46.659363],
+  "SP FARIA LIMA 3": [-23.572343,-46.695638],
+  "CP JD OLIVEIRAS 1": [-22.937102,-47.049879],
+  "SP VILA SONIA 2": [-23.584313,-46.725157],
+  "UBERLANDIA 9": [-18.910638,-48.260624],
+  "UBERABA 5": [-19.766078,-47.950605],
+  "VT SANTA HELENA 1": [-20.312316,-40.288152],
+  "VILA VELHA 3": [-20.341925,-40.289149],
+  "OSASCO 4": [-23.536568,-46.771175],
+  "SP CIDADE JARDIM 3": [-23.599037,-46.697595],
+  "VALINHOS 1": [-22.981582,-47.012476],
+  "SP INTERLAGOS 2": [-23.677359,-46.698965],
+  "SP BARRA FUNDA 1": [-23.52629,-46.681185],
+  "DIADEMA 1": [-23.691553,-46.623181],
+  "SP RAPOSO TAVARES 2": [-23.587795,-46.751202],
+  "S CAETANO DO SUL 4": [-23.625693,-46.579832],
+  "JUNDIAI 6": [-23.199566,-46.890042],
+  "DF ASA NORTE 6": [-15.786793,-47.88884],
+  "DF GUARA 1": [-15.833158,-47.955466],
+  "DF ASA SUL 5": [-15.796052,-47.891978],
+  "DF TAGUATINGA 3": [-15.841476,-48.044029],
+  "DF ASA NORTE 5": [-15.793343,-47.882585],
+  "DF LAGO NORTE 1": [-15.72079,-47.886032],
+  "GO JD GOIAS 1": [-16.710668,-49.237042],
+  "GO ST BUENO 2": [-16.708153,-49.272665],
+  "S BERNARDO CAMPO 3": [-23.723003,-46.54239],
+  "SV CAM ARVORES 1": [-12.978144,-38.454683],
+  "CP JD IPAUSSURAMA 1": [-22.925287,-47.126265],
+  "APARECIDA GOIANIA 2": [-16.741691,-49.277056],
+  "S JOSÉ RIO PRETO G": [-20.866723,-49.414787],
+  "CG SANTA FE 1": [-20.457492,-54.587398],
+  "SOROCABA 9": [-23.535369,-47.463448],
+  "SP BELA VISTA 2": [-23.55384,-46.65289],
+  "SP PIQUERI 1": [-23.506064,-46.718034],
+  "GUARULHOS F": [-23.426225,-46.481857],
+  "SV BARRA 2": [-13.006803,-38.524585],
+  "CP VIRACOPOS 1": [-23.010014,-47.146659],
+  "SV CAM ARVORES 3": [-12.981229,-38.4647],
+  "SP PAULISTA C": [-23.563547,-46.652682],
+  "RC BOA VIAGEM 4": [-8.119502,-34.904184],
+  "SP VILA OLIMPIA C": [-23.595603,-46.687063],
+  "CT CENTRO CIVICO A": [-25.423595,-49.270379],
+  "SV SÃO CRISTOVÃO 1": [-12.909602,-38.350692],
+  "RC PINA 1": [-8.086236,-34.89431],
+  "PA PASSO DA AREIA B": [-30.025974,-51.161973],
+  "NT TIROL 3": [-5.811359,-35.20624],
+  "NITEROI G": [-22.896812,-43.123872],
+  "VILA VELHA 8": [-20.352156,-40.297776],
+  "RJ CACHAMBI B": [-22.886486,-43.28365],
+  "SP PAULISTA D": [-23.57126,-46.643504],
+  "AJ JARDINS 2": [-10.942794,-37.059361],
+  "AJ ATALAIA 1": [-10.94544,-37.048204],
+  "DF LAGO SUL 4": [-15.869929,-47.920858],
+  "RJ LEME A": [-22.957302,-43.176462],
+  "SP MOEMA E": [-23.610386,-46.667295],
+  "TAUBATE 5": [-23.02434,-45.581486],
+  "SP JD AEROPORTO A": [-23.625628,-46.660879],
+  "RJ BARRA TIJUCA N": [-22.982709,-43.362837],
+  "RJ REC DOS BAND G": [-23.021972,-43.488796],
+  "PETROLINA 2": [-9.394104,-40.492964],
+  "PIRACICABA H": [-22.704012,-47.649764],
+  "GUARULHOS J": [-23.488682,-46.549018],
+  "DF ASA NORTE 16": [-15.792013,-47.883301],
+  "JUIZ DE FORA 6": [-21.781055,-43.360413],
+  "MC MANGABEIRAS 1": [-9.648651,-35.715326],
+  "RC STO AMARO 1": [-8.037959,-34.87187],
+  "NT CANDELARIA 1": [-5.841993,-35.211663],
+  "RJ DEL CASTILHO A": [-22.877992,-43.271938],
+  "JP MANAIRA 2": [-7.098755,-34.844903],
+  "CB JD ACLIMAÇÃO 2": [-15.576525,-56.072339],
+  "RC CASA FORTE 3": [-8.037103,-34.912745],
+  "RC BOA VIAGEM 11": [-8.119394,-34.904472],
+  "BL REDUTO 1": [-1.446319,-48.48972],
+  "JABOAT GUARARAPES 6": [-8.168999,-34.91962],
+  "SP ALTO PINHEIROS C": [-23.551029,-46.721634],
+  "CP JD MADALENA 1": [-22.863437,-47.023476],
+  "CP VILA BRANDINA 1": [-22.892663,-47.027609],
+  "CB SANTA ROSA 1": [-15.590256,-56.120697],
+  "RJ TIJUCA H": [-22.921917,-43.23527],
+  "JUNDIAI 13": [-23.169295,-46.89174],
+  "IMPERATRIZ 3": [-5.529006,-47.469602],
+  "SP FARIA LIMA B": [-23.576991,-46.688143],
+  "SP MOOCA E": [-23.580227,-46.593957],
+  "RIBEIRÃO PRETO S": [-21.212158,-47.815055],
+  "SP PAULISTA 4": [-23.57049,-46.643373],
+  "MC CRUZ DAS ALMAS 1": [-9.627461,-35.698866],
+  "MN PQ 10 NOVEMBRO 1": [-3.094349,-60.022405],
+  "ALPHAVILLE G": [-23.504423,-46.834656],
+  "SOROCABA L": [-23.534619,-47.462751],
+  "FT PAPICU 2": [-3.741098,-38.471712],
+  "CP JARDIM DO LAGO 2": [-22.932779,-47.077061],
+  "TS PORENQUANTO 1": [-5.077245,-42.801883],
+  "BH CAICARAS A": [-19.890687,-43.968285],
+  "PA MENINO DEUS C": [-30.049656,-51.228805],
+  "BH VENDA NOVA A": [-19.821316,-43.94715],
+  "BH SÃO PEDRO A": [-19.941053,-43.934803],
+  "LAURO DE FREITAS 7": [-12.888103,-38.318141],
+  "LONDRINA O": [-23.342219,-51.18535],
+  "FL CENTRO F": [-27.585028,-48.545221],
+  "FT EDSON QUEIROZ 1": [-3.756871,-38.488618],
+  "BH UNIÃO A": [-19.875073,-43.925417],
+  "VILA GUILHERME 2": [-23.515517,-46.618166],
+  "SL BEQUIMÃO 1": [-2.527416,-44.255316],
+  "SL ANIL 2": [-2.533806,-44.224814],
+  "SP TUCURUVI 6": [-23.480112,-46.602619],
+  "CAPAO REDONDO 3": [-23.672093,-46.787578],
+  "SANTO ANDRE 21": [-23.649542,-46.531403],
+  "DF TAGUATINGA 13": [-15.812825,-48.016192],
+  "MOGI DAS CRUZES 11": [-23.515327,-46.178874],
+  "DF CRUZEIRO 6": [-15.803367,-47.940827],
+  "SL SANTA EULALIA 1": [-2.510631,-44.28566],
+  "BH SANTA EFIGENIA C": [-19.920779,-43.920232],
+  "SV PATAMARES 2": [-12.936564,-38.39486],
+  "SV CAM ARVORES 5": [-12.981841,-38.464465],
+  "FT PRESID KENNEDY 2": [-3.726449,-38.56687],
+  "PV PONTES PINTO 1": [-8.748631,-63.875856],
+  "DF TAGUATINGA 18": [-15.80997,-48.093739],
+  "SP JARAGUA 3": [-23.444488,-46.722893],
+  "BH STO AGOSTINHO B": [-19.928208,-43.947185]
+};
+
+// Abre Google Maps na entrada exata do shopping (Street View + pin)
+function openMaps(filial) {
+  const c = COORDS_MAP[filial];
+  if (!c) return;
+  // Street View na coordenada exata, direcionado para a fachada (heading=0 = Norte)
+  // Usamos ?api=1&map_action=pano para abrir Street View diretamente
+  const url = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${c[0]},${c[1]}&heading=0&pitch=0&fov=90`;
+  window.open(url, '_blank');
+}
+
+// Botão de mapa compacto
+function mapBtn(filial) {
+  const c = COORDS_MAP[filial];
+  if (!c) return '<span style="color:var(--mt);font-size:10px">—</span>';
+  return `<button onclick="openMaps('${filial.replace(/'/g,"\\'")}')" title="Ver fachada no Google Maps" style="background:rgba(0,198,255,.1);border:1px solid rgba(0,198,255,.3);color:var(--ac);padding:3px 10px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;white-space:nowrap" onmouseover="this.style.background='rgba(0,198,255,.25)'" onmouseout="this.style.background='rgba(0,198,255,.1)'">📍 Maps</button>`;
+}
+
 const OTD_REAL = {"129":85.16,"1036":87.64,"1170":90.58,"1214":94.31,"1246":71.47,"1264":88.95,"1537":89.16,"1538":93.51,"1590":76.19,"1640":78.07,"1761":91.36,"1888":80.6,"2307":88.85,"2323":90.06,"2436":85.2,"2448":92.97,"2464":89.85,"2531":79.6,"2532":96.8,"2659":88.44,"2684":91.41,"2832":85.35,"2873":87.5,"2876":90.87,"2881":82.16,"3083":86.21,"3084":88.95,"3166":85.91,"3516":88.93,"3547":72.24,"3858":88.01,"3882":87.77,"4130":71.24,"4191":89.55,"4351":79.2,"4358":90.46,"4501":83.54,"4911":64.79,"4972":86.47,"5052":94.19,"5288":93.38,"5352":87.5};
 const LT_REAL  = {"129":62.17,"1036":81.95,"1170":73.06,"1214":91.8,"1246":45.35,"1264":68.92,"1537":88.85,"1538":82.0,"1590":93.75,"1640":45.49,"1761":91.58,"1888":61.21,"2307":85.91,"2323":79.24,"2436":78.89,"2448":91.55,"2464":85.16,"2531":59.95,"2532":94.04,"2659":83.85,"2684":87.16,"2832":59.59,"2873":84.28,"2876":82.97,"2881":55.31,"3083":75.4,"3084":82.92,"3166":38.55,"3516":74.58,"3547":76.02,"3858":68.78,"3882":75.3,"4130":64.24,"4191":70.17,"4351":82.58,"4358":66.83,"4501":81.44,"4911":60.27,"4972":65.88,"5052":88.34,"5288":92.74,"5352":89.97};
 // Floor/access from AUDITORIA_INTEGRAL_PAVIMENTOS_134.xlsx
@@ -639,6 +796,7 @@ function renderDT(){
     <td>${slaB(d.SLA_Sg)}</td>
     <td><span class="badge ${d.Status==='Ativa'?'b-ati':'b-exp'}">${d.Status}</span></td>
     <td style="font-size:10px;color:var(--mt)">${d.Recomendação||'—'}</td>
+    <td>${mapBtn(d['Farmácia'])}</td>
   </tr>`).join('');
   // Detail charts
   const ativas_f=f.filter(d=>d.Status==='Ativa');
@@ -679,6 +837,7 @@ function buildEXP(){
     <td>${d.OTD!=null?ob(d.OTD):'—'}</td><td>${d.LT!=null?ob(d.LT):'—'}</td>
     <td style="color:${ltC(d.Leadtime)};font-size:11px">${d.Leadtime}</td>
     <td style="text-align:center">${d['Vizinhas 5km']}</td><td>${acB(d.AcessoR)}</td>
+    <td>${mapBtn(d['Farmácia'])}</td>
     <td style="font-size:11px;${a.c}">${a.t}</td></tr>`;}).join('');
   // Charts
   const vc={'0 concorr.':0,'1 concorr.':0,'2 concorr.':0,'3+ concorr.':0};
