@@ -173,7 +173,7 @@ tbody td{padding:8px 11px;vertical-align:middle}
 
 <!-- ════════════ VISÃO GERAL ════════════ -->
 <div id="tab-overview" class="page active">
-  <div class="alert al-w">⚠️ <span><strong>Diagnóstico:</strong> OTD médio das 42 filiais ativas é <strong id="avg-otd-badge">—</strong>. 6 filiais com OTD crítico (&lt;80%) necessitam de atenção imediata. Apenas 2 filiais com OTD ≥95% (Excelente). Fácil acesso para motoboy em 30 das 42 filiais.</span></div>
+  <div class="alert al-w">⚠️ <span><strong>Diagnóstico:</strong> OTD médio das 42 filiais ativas é <strong id="avg-otd-badge">—</strong>. 6 filiais com OTD abaixo de 85% (Ruim) necessitam de atenção imediata. OTD é o indicador principal — escala: Ruim&lt;85 · Regular 85–90 · Bom 90–93 · Ótimo 93–95 · Excelente 95–100. Fácil acesso para motoboy em 30 das 42 filiais.</span></div>
   <div class="kpi-row k4">
     <div class="kpi" style="--c1:#00c6ff;--c2:#8b5cf6"><div class="kl">Filiais Ativas em Shopping</div><div class="kv ca">42</div><div class="ks">de 134 locais mapeados · 92 planos expansão</div></div>
     <div class="kpi" style="--c1:#10b981;--c2:#059669"><div class="kl">OTD Médio Real</div><div class="kv cw" id="kpi-otd-avg">—</div><div class="ks">Fonte: Nome_Filial.csv col. % OTD C</div></div>
@@ -226,7 +226,7 @@ tbody td{padding:8px 11px;vertical-align:middle}
     <input class="fs" id="dt-s" placeholder="🔍 Buscar farmácia, cidade, Java..." oninput="renderDT()" style="min-width:200px">
     <select class="fs" id="dt-st" onchange="renderDT()"><option value="">Ativas + Expansão</option><option value="Ativa">Somente Ativas</option><option value="Expansão">Somente Expansão</option></select>
     <select class="fs" id="dt-band" onchange="renderDT()"><option value="">Todas as Bandeiras</option><option>DROGASIL</option><option>RAIA</option></select>
-    <select class="fs" id="dt-efic" onchange="renderDT()"><option value="">Qualquer Eficiência</option><option value="Bom">Bom (OTD≥85%)</option><option value="Moderado">Moderado (80–85%)</option><option value="Ruim">Ruim (&lt;80%)</option></select>
+    <select class="fs" id="dt-efic" onchange="renderDT()"><option value="">Qualquer Eficiência</option><option value="Excelente">Excelente (≥95%)</option><option value="Ótimo">Ótimo (93–95%)</option><option value="Bom">Bom (90–93%)</option><option value="Regular">Regular (85–90%)</option><option value="Ruim">Ruim (&lt;85%)</option></select>
     <select class="fs" id="dt-lt" onchange="renderDT()"><option value="">Todos Lead Times</option><option>60 Minutos</option><option>120 Minutos</option><option>AGENDADA</option><option>NÃO</option></select>
     <select class="fs" id="dt-ac" onchange="renderDT()"><option value="">Todos os Acessos</option><option>Fácil Acesso</option><option>Acesso Viável</option><option>Ruim</option></select>
     <select class="fs" id="dt-sla" onchange="renderDT()"><option value="">Qualquer SLA Sugerido</option><option>Turbo 60</option><option>Turbo 120</option><option>D+1</option><option>Agendada</option></select>
@@ -272,9 +272,9 @@ tbody td{padding:8px 11px;vertical-align:middle}
 <div id="tab-expansion" class="page">
   <div class="alert al-g">🚀 <span><strong>Filiais com maior OTD e baixa concorrência</strong> são candidatas prioritárias para nova unidade próxima. JP MANAIRA 2 (96,8% OTD), SV PATAMARES 2 (94,2%) e UBERABA 5 (94,3%) lideram.</span></div>
   <div class="kpi-row k4">
-    <div class="kpi" style="--c1:#10b981;--c2:#059669"><div class="kl">OTD ≥ 90% (Excelente)</div><div class="kv cg" id="kpi-exc">—</div><div class="ks">Candidatas prioritárias expansão</div></div>
-    <div class="kpi" style="--c1:#f59e0b;--c2:#d97706"><div class="kl">OTD 80–90% (Analisar)</div><div class="kv cw" id="kpi-med">—</div><div class="ks">Precisam melhorar LT e OTD</div></div>
-    <div class="kpi" style="--c1:#ef4444;--c2:#dc2626"><div class="kl">OTD &lt; 80% (Crítico)</div><div class="kv cd" id="kpi-crit">—</div><div class="ks">Migrar para D+1 imediatamente</div></div>
+    <div class="kpi" style="--c1:#10b981;--c2:#059669"><div class="kl">OTD ≥ 95% (Excelente)</div><div class="kv cg" id="kpi-exc">—</div><div class="ks">Candidatas prioritárias expansão</div></div>
+    <div class="kpi" style="--c1:#f59e0b;--c2:#d97706"><div class="kl">OTD 90–95% (Ótimo/Bom)</div><div class="kv cw" id="kpi-med">—</div><div class="ks">Monitorar e expandir com cautela</div></div>
+    <div class="kpi" style="--c1:#ef4444;--c2:#dc2626"><div class="kl">OTD &lt; 85% (Ruim)</div><div class="kv cd" id="kpi-crit">—</div><div class="ks">Revisar operação — prioridade alta</div></div>
     <div class="kpi" style="--c1:#8b5cf6;--c2:#a855f7"><div class="kl">Expansão Mapeada</div><div class="kv cp">92</div><div class="ks">Locais potenciais identificados</div></div>
   </div>
   <div class="filters">
@@ -314,7 +314,7 @@ tbody td{padding:8px 11px;vertical-align:middle}
 
 <!-- ════════════ PADRÃO SLA ════════════ -->
 <div id="tab-standard" class="page">
-  <div class="alert al-i">📋 <span>Padrão obrigatório para todas as farmácias em shopping. SLA sugerido por OTD: &lt;80%→D+1 · 80–85%→Turbo 120 · ≥85%→Turbo 60. <strong>Horários revisados</strong>: Domingo ajustado para 13h (maioria dos shoppings brasileiros não abre às 12h), Feriados confirmados via shopping local.</span></div>
+  <div class="alert al-i">📋 <span>Padrão obrigatório para todas as farmácias em shopping. SLA sugerido por OTD (indicador principal): &lt;85%→D+1 · 85–90%→Turbo 120 · ≥90%→Turbo 60. Escala: Ruim&lt;85 · Regular 85–90 · Bom 90–93 · Ótimo 93–95 · Excelente 95–100. <strong>Horários revisados</strong>: Domingo ajustado para 13h (maioria dos shoppings brasileiros não abre às 12h), Feriados confirmados via shopping local.</span></div>
 
   <div class="sg">
     <div class="sc">
@@ -326,32 +326,34 @@ tbody td{padding:8px 11px;vertical-align:middle}
     </div>
     <div class="sc">
       <div class="sh">📦 One Time Delivery (OTD)</div>
-      <div class="sr"><span>Excelente</span><span class="sv cg">≥ 95%</span></div>
-      <div class="sr"><span>Bom → Turbo 60</span><span class="sv ca">≥ 85%</span></div>
-      <div class="sr"><span>Moderado → Turbo 120</span><span class="sv cw">80% – 85%</span></div>
-      <div class="sr"><span>Crítico → D+1</span><span class="sv cd">&lt; 80%</span></div>
+      <div class="sr"><span>Excelente</span><span class="sv cg">95% a 100%</span></div>
+      <div class="sr"><span>Ótimo</span><span class="sv cg">93% a 95%</span></div>
+      <div class="sr"><span>Bom</span><span class="sv ca">90% a 93%</span></div>
+      <div class="sr"><span>Regular</span><span class="sv cw">85% a 90%</span></div>
+      <div class="sr"><span>Ruim → D+1</span><span class="sv cd">&lt; 85%</span></div>
     </div>
     <div class="sc">
       <div class="sh">🚚 Tipo de Entrega</div>
-      <div class="sr"><span>Turbo 60</span><span class="sv cg">OTD ≥ 85%</span></div>
-      <div class="sr"><span>Turbo 120</span><span class="sv cw">OTD 80–85%</span></div>
-      <div class="sr"><span>D+1</span><span class="sv cd">OTD &lt; 80%</span></div>
+      <div class="sr"><span>Turbo 60</span><span class="sv cg">OTD ≥ 90% (Bom/Ótimo/Excelente)</span></div>
+      <div class="sr"><span>Turbo 120</span><span class="sv cw">OTD 85–90% (Regular)</span></div>
+      <div class="sr"><span>D+1</span><span class="sv cd">OTD &lt; 85% (Ruim)</span></div>
       <div class="sr"><span>Agendada</span><span class="sv cp">Conforme acordo</span></div>
     </div>
     <div class="sc">
       <div class="sh">🕐 Horário Padrão de Abertura</div>
-      <div class="sr"><span>Seg – Sex</span><span class="sv">10h às 22h ✅</span></div>
-      <div class="sr"><span>Sábado</span><span class="sv">10h às 22h ✅</span></div>
+      <div class="sr"><span>Seg – Sex</span><span class="sv">10h às 21h ✅</span></div>
+      <div class="sr"><span>Sábado</span><span class="sv">10h às 21h ✅</span></div>
       <div class="sr"><span>Domingo</span><span class="sv cw">13h às 20h ⚠️ revisado</span></div>
       <div class="sr"><span>Feriados</span><span class="sv cw">Conforme shopping local</span></div>
-      <div class="sr"><span>Último pedido</span><span class="sv">30 min antes do fechamento</span></div>
+      <div class="sr"><span>Último pedido</span><span class="sv">20h30 (30 min antes das 21h)</span></div>
     </div>
     <div class="sc">
       <div class="sh">🏪 Nível de Serviço</div>
-      <div class="sr"><span>Excelente</span><span class="sv cg">OTD≥95% + Turbo 60</span></div>
-      <div class="sr"><span>Bom</span><span class="sv ca">OTD 85–95% + Turbo 60</span></div>
-      <div class="sr"><span>Moderado</span><span class="sv cw">OTD 80–85% + Turbo 120</span></div>
-      <div class="sr"><span>Crítico</span><span class="sv cd">OTD &lt;80% → D+1</span></div>
+      <div class="sr"><span>Excelente</span><span class="sv cg">OTD 95–100% + Turbo 60</span></div>
+      <div class="sr"><span>Ótimo</span><span class="sv cg">OTD 93–95% + Turbo 60</span></div>
+      <div class="sr"><span>Bom</span><span class="sv ca">OTD 90–93% + Turbo 60</span></div>
+      <div class="sr"><span>Regular</span><span class="sv cw">OTD 85–90% + Turbo 120</span></div>
+      <div class="sr"><span>Ruim</span><span class="sv cd">OTD &lt;85% → D+1</span></div>
     </div>
     <div class="sc">
       <div class="sh">🏍️ Acesso Motoboy</div>
@@ -666,16 +668,19 @@ const C={ac:'#00c6ff',pu:'#8b5cf6',gn:'#10b981',wn:'#f59e0b',dg:'#ef4444',mt:'#5
 Chart.defaults.color='#5a7a9a'; Chart.defaults.font={family:'DM Sans',size:11};
 const GO={grid:{color:'rgba(30,48,80,.5)'},ticks:{color:'#5a7a9a'}};
 function ltC(lt){return lt==='60 Minutos'?C.gn:lt==='120 Minutos'?C.wn:lt==='AGENDADA'?C.pu:C.dg}
-function otdC(v){return v>=90?C.gn:v>=85?C.ac:v>=80?C.wn:C.dg}
+// Nova escala OTD/LT: Ruim<85 · Regular 85-90 · Bom 90-93 · Ótimo 93-95 · Excelente 95-100
+// OTD é o indicador principal — peso maior em todas as classificações
+function otdC(v){return v>=95?'#10b981':v>=93?'#00c6ff':v>=90?'#8b5cf6':v>=85?'#f59e0b':'#ef4444'}
 function acC(a){return a==='Fácil Acesso'?C.gn:a==='Acesso Viável'?C.wn:C.dg}
-function sug(otd){if(!otd)return'—';if(otd>=85)return'Turbo 60';if(otd>=80)return'Turbo 120';return'D+1'}
+// SLA sugerido baseado exclusivamente no OTD (indicador principal)
+function sug(otd){if(!otd)return'—';if(otd>=95)return'Turbo 60';if(otd>=90)return'Turbo 60';if(otd>=85)return'Turbo 120';return'D+1'}
 function slaOf(d){if(d.Leadtime==='60 Minutos')return'Turbo 60';if(d.Leadtime==='120 Minutos')return'Turbo 120';if(d.Leadtime==='AGENDADA')return'Agendada';return'—'}
-function eficR(otd){if(!otd)return'S/ Dados';if(otd>=85)return'Bom';if(otd>=80)return'Moderado';return'Ruim'}
+function eficR(otd){if(!otd)return'S/ Dados';if(otd>=95)return'Excelente';if(otd>=93)return'Ótimo';if(otd>=90)return'Bom';if(otd>=85)return'Regular';return'Ruim'}
 function p(v){return v!=null?v.toFixed(1)+'%':'—'}
 function ob(v,mx){if(v==null)return'—';const w=Math.max(0,Math.min(100,v));return`${v.toFixed(1)}%<span class="ob"><span class="of" style="width:${w}%;background:${otdC(v)}"></span></span>`}
 function bb(cls,txt){return`<span class="badge ${cls}">${txt}</span>`}
 function bandB(b){return b==='RAIA'?bb('b-rai','RAIA'):bb('b-dro','DROGASIL')}
-function eficB(e){return e==='Bom'?bb('b-bom','⚡ Bom'):e==='Moderado'?bb('b-mod','⚠ Moderado'):e==='Ruim'?bb('b-rui','🔴 Ruim'):e==='S/ Dados'?bb('b-desc','❓ S/ Dados'):bb('b-agen','🕐 Agendada')}
+function eficB(e){if(e==='Excelente')return bb('b-bom','🏆 Excelente');if(e==='Ótimo')return bb('b-bom','⭐ Ótimo');if(e==='Bom')return bb('b-mod','⚡ Bom');if(e==='Regular')return bb('b-rui2','⚠ Regular');if(e==='Ruim')return bb('b-rui','🔴 Ruim');if(e==='S/ Dados')return bb('b-desc','❓ S/ Dados');return bb('b-agen','🕐 Agendada')}
 function slaB(s){return s==='Turbo 60'?bb('b-bom',s):s==='Turbo 120'?bb('b-mod',s):s==='D+1'?bb('b-rui',s):s==='Agendada'?bb('b-agen',s):bb('b-desc',s)}
 function acB(a){return a==='Fácil Acesso'?bb('b-fac','✅ Fácil'):a==='Acesso Viável'?bb('b-via','⚡ Viável'):a==='Ruim'?bb('b-rui2','⛔ Ruim'):bb('b-desc','—')}
 
@@ -702,7 +707,7 @@ const avgLT=(ATIVAS.reduce((s,d)=>s+(d.LT||0),0)/ATIVAS.length).toFixed(1);
 document.getElementById('kpi-otd-avg').textContent=avgOTD+'%';
 document.getElementById('kpi-lt-avg').textContent=avgLT+'%';
 document.getElementById('avg-otd-badge').textContent=avgOTD+'%';
-const exc=ATIVAS.filter(d=>d.OTD>=90).length, med=ATIVAS.filter(d=>d.OTD>=80&&d.OTD<90).length, crit=ATIVAS.filter(d=>d.OTD<80).length;
+const exc=ATIVAS.filter(d=>d.OTD>=95).length, med=ATIVAS.filter(d=>d.OTD>=90&&d.OTD<95).length, crit=ATIVAS.filter(d=>d.OTD<85).length;
 if(document.getElementById('kpi-exc'))document.getElementById('kpi-exc').textContent=exc;
 if(document.getElementById('kpi-med'))document.getElementById('kpi-med').textContent=med;
 if(document.getElementById('kpi-crit'))document.getElementById('kpi-crit').textContent=crit;
@@ -775,7 +780,7 @@ function renderDT(){
     const mst=!st||d.Status===st, mb=!b||d.Bandeira===b, ml=!lt||d.Leadtime===lt;
     const mac=!ac||d.AcessoR===ac, msl=!sl||d.SLA_Sg===sl||d.SLA_Of===sl;
     const mpv=!pv||d.Pavimento===pv;
-    const mef=!ef||(ef==='Bom'&&d.OTD>=85)||(ef==='Moderado'&&d.OTD>=80&&d.OTD<85)||(ef==='Ruim'&&d.OTD<80&&d.OTD!=null);
+    const mef=!ef||(ef==='Excelente'&&d.OTD>=95)||(ef==='Ótimo'&&d.OTD>=93&&d.OTD<95)||(ef==='Bom'&&d.OTD>=90&&d.OTD<93)||(ef==='Regular'&&d.OTD>=85&&d.OTD<90)||(ef==='Ruim'&&d.OTD<85&&d.OTD!=null);
     return ms&&mst&&mb&&mef&&ml&&mac&&msl&&mpv;
   });
   const sc=SORT.dt;
@@ -835,7 +840,7 @@ function buildEXP(){
       <span class="badge b-desc">${d['Vizinhas 5km']} concorr.</span>
     </div>
   </div>`).join('');
-  const acao=d=>{if(d.OTD>=90&&d['Vizinhas 5km']<=2)return{t:'Abrir nova unidade próxima',c:'color:var(--ac3)'};if(d.OTD>=85)return{t:'Manter e monitorar expansão',c:'color:var(--ac)'};if(d.OTD>=80)return{t:'Melhorar OTD → meta 85%',c:'color:var(--wn)'};return{t:'Urgente: OTD crítico → D+1',c:'color:var(--dg)'}};
+  const acao=d=>{if(d.OTD>=95&&d['Vizinhas 5km']<=2)return{t:'🏆 Abrir nova unidade — OTD Excelente',c:'color:var(--ac3)'};if(d.OTD>=93&&d['Vizinhas 5km']<=2)return{t:'⭐ Alta prioridade de expansão',c:'color:var(--ac3)'};if(d.OTD>=90)return{t:'⚡ Boa performance — monitorar expansão',c:'color:var(--ac)'};if(d.OTD>=85)return{t:'⚠ Regular — melhorar OTD para ≥90%',c:'color:var(--wn)'};return{t:'🔴 Ruim — revisar operação urgente',c:'color:var(--dg)'}};
   document.getElementById('exp-body').innerHTML=f.map(d=>{const a=acao(d);return`<tr>
     <td style="font-weight:500">${d['Farmácia']}</td><td style="font-size:11px;color:var(--mt)">${d.Cidade}</td>
     <td>${d.OTD!=null?ob(d.OTD):'—'}</td><td>${d.LT!=null?ob(d.LT):'—'}</td>
@@ -863,11 +868,11 @@ function renderSLA(){
   document.getElementById('sla-count').textContent=`${f.length} filiais`;
   document.getElementById('sla-ct').textContent=`${f.length} de ${ATIVAS.length} ativas`;
   const hor=d=>{
-    if(d.Leadtime==='AGENDADA') return'Seg-Sáb: 10h-22h / Dom: 13h-20h / Feriados: conforme shopping';
-    return'Seg-Sáb: 10h-22h / Dom: 13h-20h / Último pedido 30min antes';
+    if(d.Leadtime==='AGENDADA') return'Seg-Sáb: 10h–21h / Dom: 13h–20h / Feriados: conforme shopping';
+    return'Seg-Sáb: 10h–21h / Dom: 13h–20h / Último pedido 20h30';
   };
   document.getElementById('sla-body').innerHTML=f.map(d=>{
-    const match=d.SLA_Of===d.SLA_Sg||d.SLA_Of==='Agendada';
+    const match=d.SLA_Of===d.SLA_Sg||d.SLA_Of==='Agendada'||d.SLA_Sg==='—';
     const aj=match?`<span style="color:var(--ac3);font-size:10px">✅ OK</span>`:`<span style="color:var(--wn);font-size:10px">⚠ Mudar p/ ${d.SLA_Sg}</span>`;
     return`<tr>
       <td style="font-weight:500">${d['Farmácia']}</td><td style="font-size:10px;color:var(--mt)">${d.Cidade}</td>
@@ -907,7 +912,7 @@ function resetF(p){document.querySelectorAll(`[id^="${p}-"]`).forEach(el=>{if(el
 
 // Cidades que já têm uma filial ativa com OTD ≥ 85% — modelo operacional comprovado
 const CIDADES_COM_ATIVA_TOP = new Set(
-  ATIVAS.filter(d=>d.OTD!=null&&d.OTD>=85).map(d=>d.Cidade.toUpperCase())
+  ATIVAS.filter(d=>d.OTD!=null&&d.OTD>=90).map(d=>d.Cidade.toUpperCase())
 );
 
 function calcScore(d){
